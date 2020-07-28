@@ -1,6 +1,6 @@
 from application import db
 
-Community_Personas = db.Table("community_personas", 
+Community_Persona = db.Table("community_persona", 
     db.Column(  'persona_id',
                 db.Integer,
                 db.ForeignKey('persona.id'),

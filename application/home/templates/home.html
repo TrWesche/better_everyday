@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block page_title %}First Fire{% endblock %}
+
+{% block nav_list %}
+<ul class="nav navbar-nav">
+    <li class="nav-item active">
+        <a class="nav-link disabled" href="/">Home</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/feedback">Feedback</a>
+    </li>
+</ul>
+
+<ul class="nav navbar-nav navbar-right">
+    {% if 'username' not in session %}
+    <li class="nav-item">
+        <a class="nav-item nav-link" href="/register">Register</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-item nav-link" href="/login">Login</a>
+    </li>
+    {% endif %}
+
+    {% if 'username' in session %}
+    <li class="nav-item dropdown mr-5">
+        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <i class="far fa-user-circle mr-2"></i>{{session["first_name"]}}
+        </a>
+        <div class="dropdown-menu" aria-labelledby="profileDropdown">
+          <a class="dropdown-item" href="/users/{{session['username']}}">My Profile</a>
+          <a class="dropdown-item" href="/users/{{session['username']}}/feedback">My Posts</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="/logout">Logout</a>
+        </div>
+    </li>
+    {% endif %}
+</ul>
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+    {% if 'username' in session %}
+    <h1 class="mt-4 display-3">Welcome {{session["first_name"]}}!</h1>
+    {% else %}
+    <h1 class="mt-4 display-3">Welcome!</h1>
+    {% endif %}
+</div>
+
+<div class="container mt-5">
+
+    <div class="row">
+        <p>Under construction!</p>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, redirect, flash, request, session
 from flask import current_app as app
 from sqlalchemy import exc
-from models.model_community import Community
-from models.model_thread import Thread
-from models.model_post import Post
-from models.table_community_habits import Community_Habits
-from models.table_community_personas import Community_Personas
+from .models.model_community import Community
+from .models.model_thread import Thread
+from .models.model_post import Post
+from .models.table_community_persona import Community_Persona
+from .models.table_community_habit import Community_Habit
+from .models.table_community_goal import Community_Goal
 from application import db
 
 

@@ -11,4 +11,4 @@ class Goal(db.Model):
     description = db.Column(db.String(500), nullable = False)
 
     # Collation column is intended to collate multiple versions of the same "Goal" in the future for improved linking to communities
-    collation = db.Column(db.Integer)
+    collate_titles = db.Column(db.Integer)

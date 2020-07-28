@@ -15,5 +15,4 @@ class User(db.Model):
     email = db.Column(db.String(100),
                 nullable = False)
 
-    
-
+    username = db.relationship('Authentication', backref='user', cascade="all, delete-orphan")

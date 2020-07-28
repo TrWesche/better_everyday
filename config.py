@@ -36,6 +36,7 @@ class TestConfig(Config):
     TESTING = True
 
     # Database
+    SQLALCHEMY_RECORD_QUERIES = True
     SQLALCHEMY_DATABASE_URI = environ.get("SQLALCHEMY_DATABASE_URI_TEST")
     SQLALCHEMY_ECHO = True
 

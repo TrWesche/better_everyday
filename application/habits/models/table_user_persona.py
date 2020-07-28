@@ -1,6 +1,6 @@
 from application import db
 
-User_Personas = db.Table("user_personas",
+User_Persona = db.Table("user_persona",
     db.Column(  'id',
                 db.Integer,
                 primary_key = True),

@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, flash, request, session
 from flask import current_app as app
 from sqlalchemy import exc
-from models.model_user import User
+from .models.model_user import User
 from application import db
 
 

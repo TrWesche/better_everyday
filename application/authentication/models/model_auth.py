@@ -5,15 +5,13 @@ bcrypt = Bcrypt()
 
 class Authentication(db.Model):
 
-    __tablename__ = "auth"
+    __tablename__ = "authentication"
 
     username = db.Column(db.String(50),
                 primary_key = True)
 
     password = db.Column(db.String,
                 nullable = False)
-
-    user = db.relationship('User', backref='username', cascade="all, delete-orphan")
 
     # TODO: Register needs to create an entry in the User table in addition to the authentication table
 
