@@ -20,7 +20,7 @@ def create_app():
         from .authentication import views_auth
         from .user import views_user
         from .community import views_community
-        from .habits import views_habits
+        from .plan import views_plan
         from .tracking import views_tracking
         
         # Register Blueprints
@@ -28,7 +28,7 @@ def create_app():
         app.register_blueprint(views_auth.auth_bp)
         app.register_blueprint(views_user.user_bp)
         app.register_blueprint(views_community.community_bp)
-        app.register_blueprint(views_habits.habit_bp)
+        app.register_blueprint(views_plan.plan_bp)
         app.register_blueprint(views_tracking.tracking_bp)
 
         # db.create_all()

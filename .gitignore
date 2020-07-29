@@ -3,3 +3,5 @@ __pycache__/
 *.pyc
 starting_cmds.md
 .env
+key.py
+key.js

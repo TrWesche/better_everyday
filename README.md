@@ -1,3 +1,14 @@
+# Setup requirements
+In order to get the environment running an environment file named .env will need to be created with the following parameters:
+```
+SECRET_KEY = 'secret_key'
+FLASK_APP = 'wsgi.py'
+
+SQLALCHEMY_DATABASE_URI_PROD = "prod_database_path"
+
+SQLALCHEMY_DATABASE_URI_TEST = "test_database_path"
+```
+
 # The Database Schema will consist of 19 tables.
 
 ## User Tables:
@@ -42,3 +53,5 @@
 
 3. Additional API option - TheSaidSo API for serving "inspirational" quotes to platform users:
    - https://quotes.rest/
+
+Note: For all external APIs which require validation a "key" file must be added to the api folder with a valid API key variable.
