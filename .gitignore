@@ -1,4 +1,5 @@
+\venv
+__pycache__/
+*.pyc
 starting_cmds.md
-/venv
-/__pycache__
 .env
