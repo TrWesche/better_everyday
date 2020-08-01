@@ -10,6 +10,8 @@ class Config:
     # General Config
     SECRET_KEY = environ.get('SECRET_KEY')
     FLASK_APP = environ.get('FLASK_APP')
+    CURR_USER_KEY = environ.get('CURR_USER_KEY')
+
 
     # Database
     SQLALCHEMY_TRACK_MODIFICATIONS = True

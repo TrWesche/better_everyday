@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Login{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h1 class="mt-4 display-3">Login</h1>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col">
+            <p>Fill out the form below to complete your registration:</p>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col">
+            <form action="/login" method="post">
+                {{ form.hidden_tag() }}
+
+                {% for field in form if field.widget.input_type != 'hidden'%}
+
+                <div class="form-group">
+                    {{ field.label(class_="font-weight-bolder") }}
+                    {{ field(class_="form-control")}}
+                    {% for error in field.errors %}
+                    <small class="form-text text-danger">
+                    {{error}}
+                    </small>
+                    {% endfor %}
+                </div>
+
+                {% endfor %}
+
+                <a href="/" class="btn btn-secondary my-2">Cancel</a>
+                <button type="submit" class="btn btn-primary my-2">Submit</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

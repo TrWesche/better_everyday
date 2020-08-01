@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block page_title %}All Users{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% if 'username' in session %}
+    <h1 class="mt-4 display-3">Welcome {{session["first_name"]}}!</h1>
+    {% else %}
+    <h1 class="mt-4 display-3">Welcome!</h1>
+    {% endif %}
+    <img src="{{ image_url }}" class="img-fluid" alt="Responsive image">
+</div>
+
+<div class="container mt-5">
+
+    <div class="row">
+        {% for user in user_list %}
+        <p>{{ user.username }} - {{ user.first_name }}</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

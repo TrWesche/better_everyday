@@ -10,4 +10,4 @@ class User_Persona(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
 
-    persona_id = db.Column(db.Integer, db.ForeignKey('persona.id'))
+    persona_id = db.Column(db.Integer, db.ForeignKey('persona.id'), nullable = False)

@@ -23,36 +23,34 @@
             <div class="container-fluid">
                 <ul class="nav navbar-nav">
                     <li class="nav-item {% block nav_plan %}{% endblock %}">
-                        <a class="nav-link" href="/plan">Plan</a>
+                        <a class="nav-link" href="{{ url_for('plan_bp.get_plan_home') }}">Plan</a>
                     </li>
                     <li class="nav-item {% block nav_community %}{% endblock %}">
-                        <a class="nav-link" href="/feedback">Community</a>
+                        <a class="nav-link" href="{{ url_for('community_bp.get_community_home') }}">Community</a>
                     </li>
                     <li class="nav-item {% block nav_tracking %}{% endblock %}">
-                        <a class="nav-link" href="/tracking">Tracking</a>
+                        <a class="nav-link" href="{{ url_for('tracking_bp.get_tracking_home') }}">Tracking</a>
                     </li>
                 </ul>
                 
                 <ul class="nav navbar-nav navbar-right">
-                    {% if 'username' not in session %}
+                    {% if not g.user %}
                     <li class="nav-item">
-                        <a class="nav-item nav-link" href="/register">Register</a>
+                        <a class="nav-item nav-link" href="{{ url_for('auth_bp.user_registration') }}">Register</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-item nav-link" href="/login">Login</a>
+                        <a class="nav-item nav-link" href="{{ url_for('auth_bp.user_login') }}">Login</a>
                     </li>
-                    {% endif %}
-                
-                    {% if 'username' in session %}
+                    {% else %}
                     <li class="nav-item dropdown mr-5">
                         <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                            <i class="far fa-user-circle mr-2"></i>{{session["first_name"]}}
+                            <i class="far fa-user-circle mr-2"></i>{{ g.user.username }}
                         </a>
                         <div class="dropdown-menu" aria-labelledby="profileDropdown">
-                          <a class="dropdown-item" href="/users/{{session['username']}}">My Profile</a>
-                          <a class="dropdown-item" href="/users/{{session['username']}}/feedback">My Posts</a>
+                          <a class="dropdown-item" href="{{ url_for('user_bp.get_user_profile',username=g.user.username) }}">My Profile</a>
+
                           <div class="dropdown-divider"></div>
-                          <a class="dropdown-item" href="/logout">Logout</a>
+                          <a class="dropdown-item" href="{{ url_for('auth_bp.user_logout') }}">Logout</a>
                         </div>
                     </li>
                     {% endif %}

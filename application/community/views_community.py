@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, flash, request, session
+from flask import Blueprint, render_template, redirect, flash, request, session, url_for
 from flask import current_app as app
 from sqlalchemy import exc
 from .models.model_community import Community
@@ -17,24 +17,19 @@ community_bp = Blueprint(
     static_folder='static'
 )
 
-@community_bp.route("/communities", methods=["GET"])
+@community_bp.route("/", methods=["GET"])
 # TODO: Implement search functionality
-def get_communities_list():
-    return render_template("communities_list.html")
+def get_community_home():
+    return render_template("community_home.html")
 
 
-@community_bp.route("/communities/new", methods=["GET"])
+@community_bp.route("/new", methods=["GET", "POST"])
 def get_new_community_form():
-    return render_template("communities_form.html")
+    return redirect(url_for("community_bp.get_communities_home"))
 
 
-@community_bp.route("/communities/new", methods=["POST"])
-def create_new_community():
-    return redirect("/communities")
-
-
-@community_bp.route("/communities/<int:community_id>", methods=["GET"])
+@community_bp.route("/<int:community_id>", methods=["GET"])
 def get_community_page(community_id):
-    return render_template("community_main.html")
+    return redirect(url_for("community_bp.get_communities_home"))
 
 # TODO: Define other routes for community posts, additions, deletions, etc.

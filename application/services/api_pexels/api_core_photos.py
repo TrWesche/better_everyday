@@ -3,12 +3,15 @@ from .key import API_KEY
 
 rootURL = "https://api.pexels.com/v1"
 
-
-def get_photo(photo_id: int):
-    headers={
+def create_headers():
+    headers = {
         "Content-Type":"application/json",
         "Authorization":API_KEY
-    }    
+    }
+    return headers
+
+def get_photo(photo_id: int):
+    headers = create_headers()
 
     resp = requests.get(f"{rootURL}/photos/{photo_id}", headers=headers)
     
@@ -16,10 +19,7 @@ def get_photo(photo_id: int):
 
 
 def search_photos(query_str: str):
-    headers={
-        "Content-Type":"application/json",
-        "Authorization":API_KEY
-    } 
+    headers = create_headers()
 
     resp = requests.get(f"{rootURL}/search?{query_str}", headers=headers)
 
@@ -27,10 +27,7 @@ def search_photos(query_str: str):
 
 
 def get_curated_photos():
-    headers={
-        "Content-Type":"application/json",
-        "Authorization":API_KEY
-    } 
+    headers = create_headers()
 
     resp = requests.get(f"{rootURL}/curated", headers=headers)
 

@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
-{% block page_title %}First Fire{% endblock %}
+{% block page_title %}Better Everyday{% endblock %}
 
 {% block content %}
 <div class="container">
-    {% if 'username' in session %}
-    <h1 class="mt-4 display-3">Welcome {{session["first_name"]}}!</h1>
+    {% if not g.user %}
+    <h1 class="mt-4 display-3">Welcome to Better Everyday!</h1>
     {% else %}
-    <h1 class="mt-4 display-3">Welcome!</h1>
+    <h1 class="mt-4 display-3">Welcome Back {{ g.user.first_name }}!</h1>
     {% endif %}
     <img src="{{ image_url }}" class="img-fluid" alt="Responsive image">
 </div>

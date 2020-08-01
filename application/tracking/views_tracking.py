@@ -18,6 +18,6 @@ tracking_bp = Blueprint(
 
 
 # TODO: Implement routes
-@tracking_bp.route("/tracking", methods=["GET"])
-def get_communities_list():
-    return redirect("/")
+@tracking_bp.route("/", methods=["GET"])
+def get_tracking_home():
+    return render_template("tracking_home.html")

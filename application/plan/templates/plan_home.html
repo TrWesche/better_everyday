@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Improvement Plan{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% if g.user %}
+    <h1 class="mt-4 display-3">My Development Plan</h1>
+    {% else %}
+    <h1 class="mt-4 display-3">My Development Plan</h1>
+    {% endif %}
+    <div class="row mt-5">
+        <div class="col">
+            <div id="list-plan-attributes" class="list-group list-group-horizontal" role="tablist">
+                <a class="list-group-item list-group-item-action active" id="list-persona-list" data-toggle="list" href="#list-persona" role="tab" aria-controls="persona">Personas</a>
+                <a class="list-group-item list-group-item-action" id="list-habit-list" data-toggle="list" href="#list-habit" role="tab" aria-controls="habit">Habits</a>
+                <a class="list-group-item list-group-item-action" id="list-goal-list" data-toggle="list" href="#list-goal" role="tab" aria-controls="goal">Goals</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <div class="tab-content" id="nav-tabContent">
+                <div class="tab-pane fade show active" id="list-persona" role="tabpanel" aria-labelledby="list-persona-list">
+                    {% if user_personas %}
+                    
+                    {% for persona in user_personas %}
+                    <p>{{ persona.title }}</p>
+                    <p>{{ persona.description }}</p>
+                    {% endfor %}
+
+                    {% else %}
+                    <p>You have not defined any Personas yet!</p>
+                    {% endif %}
+                </div>
+                <div class="tab-pane fade" id="list-habit" role="tabpanel" aria-labelledby="list-habit-list">
+                    {% if user_habits %}
+                    
+                    {% for habit in user_habits %}
+                    <p>{{ habit.title }}</p>
+                    <p>{{ habit.description }}</p>
+                    {% endfor %}
+
+                    {% else %}
+                    <p>You have not defined any Habits yet!</p>
+                    {% endif %}
+                </div>
+                <div class="tab-pane fade" id="list-goal" role="tabpanel" aria-labelledby="list-goal-list">
+                    {% if user_goals %}
+                    
+                    {% for goal in user_goals %}
+                    <p>{{ goal.title }}</p>
+                    <p>{{ goal.description }}</p>
+                    {% endfor %}
+
+                    {% else %}
+                    <p>You have not defined any Goals yet!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
