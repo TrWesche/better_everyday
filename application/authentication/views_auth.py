@@ -19,27 +19,34 @@ auth_bp = Blueprint(
 )
 
 
-CURR_USER_KEY = "curr_user"
+# CURR_USER_KEY = "curr_user"
 
-@app.before_request
+@auth_bp.before_app_request
 def add_user_to_g():
     """If we're logged in, add curr user to Flask global."""
+    user_id = session.get("user_id")
 
-    if CURR_USER_KEY in session:
-        g.user = User.query.get(session[CURR_USER_KEY])
-    else:
+    if user_id is None:
         g.user = None
+    else:
+        g.user = User.query.get(user_id)
+
+    # if CURR_USER_KEY in session:
+    #     g.user = User.query.get(session[CURR_USER_KEY])
+    # else:
+    #     g.user = None
 
 def do_login(user):
     """Log in user."""
 
-    session[CURR_USER_KEY] = user.id
+    session["user_id"] = user.id
 
 def do_logout():
     """Logout user."""
+    session.clear()
 
-    if CURR_USER_KEY in session:
-        del session[CURR_USER_KEY]
+    # if CURR_USER_KEY in session:
+    #     del session[CURR_USER_KEY]
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])

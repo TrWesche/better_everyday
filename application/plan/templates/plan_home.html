@@ -4,63 +4,138 @@
 
 {% block content %}
 <div class="container">
-    {% if g.user %}
     <h1 class="mt-4 display-3">My Development Plan</h1>
-    {% else %}
-    <h1 class="mt-4 display-3">My Development Plan</h1>
-    {% endif %}
+
     <div class="row mt-5">
         <div class="col">
-            <div id="list-plan-attributes" class="list-group list-group-horizontal" role="tablist">
-                <a class="list-group-item list-group-item-action active" id="list-persona-list" data-toggle="list" href="#list-persona" role="tab" aria-controls="persona">Personas</a>
-                <a class="list-group-item list-group-item-action" id="list-habit-list" data-toggle="list" href="#list-habit" role="tab" aria-controls="habit">Habits</a>
-                <a class="list-group-item list-group-item-action" id="list-goal-list" data-toggle="list" href="#list-goal" role="tab" aria-controls="goal">Goals</a>
+            <div class="card text-center">
+                <div class="card-header" role="tablist">
+                    <ul class="nav nav-tabs card-header-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="show-persona-list" data-toggle="list" href="#persona-list" role="tab" aria-controls="persona">Personas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="show-habit-list" data-toggle="list" href="#habit-list" role="tab" aria-controls="habit">Habits</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="show-goal-list" data-toggle="list" href="#goal-list" role="tab" aria-controls="goal">Goals</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="card-body tab-content" id="nav-tabContent">
+                    <div class="tab-pane fade show active" id="persona-list" role="tabpanel" aria-labelledby="show-persona-list">
+                        {% if user_personas %}
+
+                        <div class="accordion" id="accordionPersona">
+                            {% for persona in user_personas %}
+                            <div class="card">
+                                <div class="card-header" id="heading{{ persona.title }}">
+                                    <h2 class="mb-0">
+                                    <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse{{ persona.title }}" aria-expanded="false" aria-controls="collapse{{ persona.title }}">
+                                        {{ persona.title }}
+                                    </button>
+                                    </h2>
+                                </div>
+                            
+                                <div id="collapse{{ persona.title }}" class="collapse" aria-labelledby="heading{{ persona.title }}" data-parent="#accordionPersona">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <h5 class="card-text ml-3">{{ persona.description }}</h5>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-12 col-lg-6 mt-4">
+                                                <h5>Activity</h5>
+                                                <p>Chart of Activity</p>
+                                                <br>
+                                                <p>Over the Last 7 Days</p>
+                                            </div>
+                                            
+                                            <div class="col-12 col-md-6 col-lg-3 mt-4">
+                                                <h5>Linked Habits</h5>
+                                                <p>List of Habits</p>
+                                                <br>
+                                                <p>Linked to this Persona</p>
+                                            </div>
+
+                                            <div class="col-12 col-md-6 col-lg-3 mt-4">
+                                                <h5>Linked Goals</h5>
+                                                <p>List of Goals</p>
+                                                <br>
+                                                <p>Linked to this Persona</p>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="row mt-4 justify-content-center">
+                                            <a href="#" class="btn btn-primary mx-2">Edit Persona</a>
+                                            <a href="#" class="btn btn-danger mx-2">Delete Persona</a>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        {% else %}
+                        <p>You have not defined any Personas yet!</p>
+                        {% endif %}
+
+                        <div class="accordion mt-3" id="accordionAddPersona">
+                            <div class="card text-white bg-secondary">
+                                <div class="card-header" id="headingAddPersona">
+                                    <h2 class="mb-0">
+                                    <button class="btn btn-block text-white text-left" type="button" data-toggle="collapse" data-target="#collapseAddPersona" aria-expanded="false" aria-controls="collapseAddPersona">
+                                        Create Persona
+                                    </button>
+                                    </h2>
+                                </div>
+                            
+                                <div id="collapseAddPersona" class="collapse" aria-labelledby="headingAddPersona" data-parent="#accordionAddPersona">
+                                    <div class="card-body">
+                                        <form action="{{ url_for('plan_bp.add_user_persona')}}" method="post">
+                                            {{ user_persona_form.hidden_tag() }}
+                            
+                                            {% for field in user_persona_form if field.widget.input_type != 'hidden'%}
+                            
+                                            <div class="form-group">
+                                                {{ field.label(class_="font-weight-bolder") }}
+                                                {{ field(class_="form-control")}}
+                                                {% for error in field.errors %}
+                                                <small class="form-text text-danger">
+                                                {{error}}
+                                                </small>
+                                                {% endfor %}
+                                            </div>
+                            
+                                            {% endfor %}
+                            
+                                            <a href="/" class="btn btn-secondary my-2">Cancel</a>
+                                            <button type="submit" class="btn btn-primary my-2">Submit</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="habit-list" role="tabpanel" aria-labelledby="show-habit-list">
+                        <h5 class="card-title">Special title treatment2</h5>
+                        <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                        <a href="#" class="btn btn-primary">Go somewhere</a>
+                    </div>
+                    <div class="tab-pane fade" id="goal-list" role="tabpanel" aria-labelledby="show-goal-list">
+                        <h5 class="card-title">Special title treatment3</h5>
+                        <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                        <a href="#" class="btn btn-primary">Go somewhere</a>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
-
-    <div class="row">
-        <div class="col">
-            <div class="tab-content" id="nav-tabContent">
-                <div class="tab-pane fade show active" id="list-persona" role="tabpanel" aria-labelledby="list-persona-list">
-                    {% if user_personas %}
-                    
-                    {% for persona in user_personas %}
-                    <p>{{ persona.title }}</p>
-                    <p>{{ persona.description }}</p>
-                    {% endfor %}
-
-                    {% else %}
-                    <p>You have not defined any Personas yet!</p>
-                    {% endif %}
-                </div>
-                <div class="tab-pane fade" id="list-habit" role="tabpanel" aria-labelledby="list-habit-list">
-                    {% if user_habits %}
-                    
-                    {% for habit in user_habits %}
-                    <p>{{ habit.title }}</p>
-                    <p>{{ habit.description }}</p>
-                    {% endfor %}
-
-                    {% else %}
-                    <p>You have not defined any Habits yet!</p>
-                    {% endif %}
-                </div>
-                <div class="tab-pane fade" id="list-goal" role="tabpanel" aria-labelledby="list-goal-list">
-                    {% if user_goals %}
-                    
-                    {% for goal in user_goals %}
-                    <p>{{ goal.title }}</p>
-                    <p>{{ goal.description }}</p>
-                    {% endfor %}
-
-                    {% else %}
-                    <p>You have not defined any Goals yet!</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
+  
 
 </div>
 

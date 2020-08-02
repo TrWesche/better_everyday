@@ -3,8 +3,10 @@ from wtforms import StringField, PasswordField
 from wtforms.validators import DataRequired, Email, Length, Optional
 
 
+# TODO: Integrate with User Profile Page
+
 class UserUpdateFrom(FlaskForm):
-    """Form for registering new users."""
+    """Form for updating user data."""
 
     username = StringField('Username', validators=[DataRequired(), Length(min=5, max=50)])
     password = PasswordField('Password', validators=[Length(min=6)])

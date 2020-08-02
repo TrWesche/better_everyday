@@ -1,13 +1,20 @@
-from flask import Blueprint, render_template, redirect, flash, request, session, g
+from flask import Blueprint, render_template, redirect, flash, request, session, g, url_for
 from flask import current_app as app
 from sqlalchemy import exc
+
+# Import Models
 from .models.model_persona import Persona
 from .models.model_habit import Habit
 from .models.model_goal import Goal
 from .models.model_user_persona import User_Persona
 from .models.model_user_habit import User_Habit
 from .models.model_user_goal import User_Goal
+
+# Import Forms
+from .forms.from_user_persona import UserPersonaFrom
+
 from application import db
+
 
 
 # Blueprint Configuration
@@ -34,6 +41,10 @@ plan_bp = Blueprint(
 
 @plan_bp.route("/", methods=["GET"])
 def get_plan_home():
+    user_personas = None
+    user_habits = None
+    user_goals = None
+
     if g.user:
         user_personas = User_Persona.query\
             .join(Persona, User_Persona.persona_id == Persona.id)\
@@ -50,6 +61,48 @@ def get_plan_home():
             .add_columns(User_Goal.user_id, User_Goal.id, Goal.id, Goal.title, Goal.description)\
             .filter(User_Goal.user_id == g.user.id).all()
 
-    return render_template("plan_home.html", user_personas=user_personas, user_habits=user_habits, user_goals=user_goals)
+        user_persona_form = UserPersonaFrom()
+
+    return render_template(
+        "plan_home.html", 
+        user_personas=user_personas, 
+        user_habits=user_habits, 
+        user_goals=user_goals,
+        user_persona_form=user_persona_form)
+
+# TODO: Convert to AJAX
+@plan_bp.route("/add_user_persona", methods=["POST"])
+def add_user_persona():
+    form = UserPersonaFrom(request.form)
+
+    if form.validate_on_submit():
+        target_persona = Persona.query.filter(Persona.title == form.title.data.lower()).first()
+
+        if not target_persona:
+            target_persona = Persona(title = form.title.data.lower(), description = form.description.data)
+            db.session.add(target_persona)
+
+            try:
+                db.session.commit()
+            except Exception as e:
+                flash("Error: Unable to create new persona", "danger")
+                print(e)
+                return redirect(url_for("plan_bp.get_plan_home"))
+
+        active = form.active.data
+        user_id = g.user.id
+        persona_id = target_persona.id
+
+        new_user_persona = User_Persona(active = active, user_id = user_id, persona_id = persona_id)
+
+        db.session.add(new_user_persona)
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            flash("Error: Unable to create new persona", "danger")
+            print(e)
+
+    return redirect(url_for("plan_bp.get_plan_home"))
 
 # TODO: Implement routes
