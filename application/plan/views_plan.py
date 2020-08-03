@@ -11,7 +11,9 @@ from .models.model_user_habit import User_Habit
 from .models.model_user_goal import User_Goal
 
 # Import Forms
-from .forms.from_user_persona import UserPersonaFrom
+from .forms.form_user_persona import UserPersonaFrom
+from .forms.form_user_habit import UserHabitForm
+from .forms.form_user_goal import UserGoalForm
 
 from application import db
 
@@ -61,14 +63,29 @@ def get_plan_home():
             .add_columns(User_Goal.user_id, User_Goal.id, Goal.id, Goal.title, Goal.description)\
             .filter(User_Goal.user_id == g.user.id).all()
 
+        persona_list = [(persona.id, persona.title) for persona in user_personas]
+        print(persona_list)
+
         user_persona_form = UserPersonaFrom()
 
-    return render_template(
-        "plan_home.html", 
-        user_personas=user_personas, 
-        user_habits=user_habits, 
-        user_goals=user_goals,
-        user_persona_form=user_persona_form)
+        user_habit_form = UserHabitForm()
+        user_habit_form.persona.choices = persona_list
+
+        user_goal_form = UserGoalForm()
+        user_goal_form.persona.choices = persona_list
+
+        return render_template(
+            "plan_home.html", 
+            user_personas=user_personas, 
+            user_habits=user_habits, 
+            user_goals=user_goals,
+            user_persona_form=user_persona_form,
+            user_habit_form=user_habit_form,
+            user_goal_form=user_goal_form)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
 
 # TODO: Convert to AJAX
 @plan_bp.route("/add_user_persona", methods=["POST"])
@@ -106,3 +123,11 @@ def add_user_persona():
     return redirect(url_for("plan_bp.get_plan_home"))
 
 # TODO: Implement routes
+@plan_bp.route("/add_user_habit", methods=["POST"])
+def add_user_habit():
+    return redirect(url_for("plan_bp.get_plan_home"))
+
+# TODO: Implement routes
+@plan_bp.route("/add_user_goal", methods=["POST"])
+def add_user_goal():
+    return redirect(url_for("plan_bp.get_plan_home"))

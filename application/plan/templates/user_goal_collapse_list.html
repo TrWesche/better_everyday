@@ -1,0 +1,51 @@
+<div class="accordion" id="accordionGoal">
+    {% for goal in user_goals %}
+    <div class="card">
+        <div class="card-header" id="heading{{ goal.title }}">
+            <h2 class="mb-0">
+            <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse{{ goal.title }}" aria-expanded="false" aria-controls="collapse{{ goal.title }}">
+                {{ goal.title }}
+            </button>
+            </h2>
+        </div>
+    
+        <div id="collapse{{ goal.title }}" class="collapse" aria-labelledby="heading{{ goal.title }}" data-parent="#accordionGoal">
+            <div class="card-body">
+                <div class="row">
+                    <h5 class="card-text ml-3">{{ goal.description }}</h5>
+                </div>
+
+                <div class="row">
+                    <div class="col-12 col-lg-6 mt-4">
+                        <h5>Activity</h5>
+                        <p>Chart of Activity</p>
+                        <br>
+                        <p>Over the Last 7 Days</p>
+                    </div>
+                    
+                    <div class="col-12 col-md-6 col-lg-3 mt-4">
+                        <h5>Linked Personas</h5>
+                        <p>List of Personas</p>
+                        <br>
+                        <p>Linked to this Goal</p>
+                    </div>
+
+                    <div class="col-12 col-md-6 col-lg-3 mt-4">
+                        <h5>Linked Habits</h5>
+                        <p>List of Habits</p>
+                        <br>
+                        <p>Linked to this Goal</p>
+                    </div>
+
+                </div>
+
+                <div class="row mt-4 justify-content-center">
+                    <a href="#" class="btn btn-primary mx-2">Edit Goal</a>
+                    <a href="#" class="btn btn-danger mx-2">Delete Goal</a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
