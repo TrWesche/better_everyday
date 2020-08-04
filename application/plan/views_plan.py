@@ -27,20 +27,6 @@ plan_bp = Blueprint(
 )
 
 
-# CURR_USER_KEY = "curr_user"
-
-# @app.before_request
-# def add_user_to_g():
-#     """If we're logged in, add curr user to Flask global."""
-#     print("Running Get User Key")
-#     print(session.get(CURR_USER_KEY))
-#     if CURR_USER_KEY in session:
-#         g.user = User.query.get(session[CURR_USER_KEY])
-#     else:
-#         g.user = None
-#     print(g.user)
-
-
 @plan_bp.route("/", methods=["GET"])
 def get_plan_home():
     user_personas = None
@@ -64,7 +50,6 @@ def get_plan_home():
             .filter(User_Goal.user_id == g.user.id).all()
 
         persona_list = [(persona.id, persona.title) for persona in user_personas]
-        print(persona_list)
 
         user_persona_form = UserPersonaFrom()
 
@@ -104,6 +89,7 @@ def add_user_persona():
             except Exception as e:
                 flash("Error: Unable to create new persona", "danger")
                 print(e)
+                db.session.rollback()
                 return redirect(url_for("plan_bp.get_plan_home"))
 
         active = form.active.data
@@ -119,15 +105,123 @@ def add_user_persona():
         except Exception as e:
             flash("Error: Unable to create new persona", "danger")
             print(e)
+            db.session.rollback()
 
     return redirect(url_for("plan_bp.get_plan_home"))
 
-# TODO: Implement routes
+
 @plan_bp.route("/add_user_habit", methods=["POST"])
 def add_user_habit():
+    form = UserHabitForm(request.form)
+
+    #!!!# Is there a better way to retrieve the value choices for the persona list?
+    user_personas = User_Persona.query.filter(User_Persona.user_id == g.user.id).all()
+    persona_list = [(persona.persona_id, "persona") for persona in user_personas] # This works becuase the validate_on_submit only checks the id (first) value of the tuple
+    form.persona.choices = persona_list
+
+
+    if form.validate_on_submit():
+        target_habit = Habit.query.filter(Habit.title == form.title.data.lower()).first()
+        target_persona = Persona.query.filter(Persona.id == form.persona.data).first()
+
+        if not target_habit:
+            target_habit = Habit(title = form.title.data.lower(), description = form.description.data)
+            db.session.add(target_habit)
+
+            try:
+                db.session.commit()
+            except Exception as e:
+                flash("Error: Unable to create new habit", "danger")
+                print(e)
+                db.session.rollback()
+                return redirect(url_for("plan_bp.get_plan_home"))
+            
+        active = form.active.data
+        user_id = g.user.id
+        persona_id = target_persona.id
+        habit_id = target_habit.id
+
+        # TODO: Add scoring system & schedule selection
+        #!!!# Schedules & Scoring Systems will need to be filtered by user_id as well in order to be scalable.  Will require a change in the model.
+        #!!!# Future version should only show public scoring_systems/schedules (defaults provided by BE) and the scoring systems created by users.
+        scoring_system_id = form.scoring_system_id.data
+        schedule_id = form.schedule_id.data
+
+        new_user_habit = User_Habit(
+                            active = active, 
+                            user_id = user_id, 
+                            persona_id = persona_id, 
+                            habit_id = habit_id, 
+                            scoring_system_id = scoring_system_id, 
+                            schedule_id = schedule_id)
+
+        db.session.add(new_user_habit)
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            flash("Error: Unable to create new user habit", "danger")
+            print(e)
+            db.session.rollback()
+
     return redirect(url_for("plan_bp.get_plan_home"))
+
 
 # TODO: Implement routes
 @plan_bp.route("/add_user_goal", methods=["POST"])
 def add_user_goal():
+    form = UserGoalForm(request.form)
+
+    #!!!# This sucks there has to be a better way
+    user_personas = User_Persona.query.filter(User_Persona.user_id == g.user.id).all()
+    persona_list = [(persona.persona_id, "persona") for persona in user_personas] # This works becuase the validate_on_submit only checks the id part of the tuple
+    form.persona.choices = persona_list
+
+
+    if form.validate_on_submit():
+        target_goal = Goal.query.filter(Goal.title == form.title.data.lower()).first()
+        target_persona = Persona.query.filter(Persona.id == form.persona.data).first()
+
+        if not target_goal:
+            target_goal = Goal(title = form.title.data.lower(), description = form.description.data)
+            db.session.add(target_goal)
+
+            try:
+                db.session.commit()
+            except Exception as e:
+                flash("Error: Unable to create new goal", "danger")
+                print(e)
+                db.session.rollback()
+                return redirect(url_for("plan_bp.get_plan_home"))
+            
+        active = form.active.data
+        user_id = g.user.id
+        persona_id = target_persona.id
+        goal_id = target_goal.id
+
+        # TODO: Add scoring system & schedule selection
+        #!!!# Schedules & Scoring Systems will need to be filtered by user_id as well in order to be scalable.  Will require a change in the model.
+        #!!!# Future version should only show public scoring_systems/schedules (defaults provided by BE) and the scoring systems created by users.
+        scoring_system_id = form.scoring_system_id.data
+        schedule_id = form.schedule_id.data
+
+
+        #!!!# The user should also be able to link a goal to a habit in the future
+        new_user_goal = User_Goal(
+                            active = active, 
+                            user_id = user_id, 
+                            persona_id = persona_id, 
+                            goal_id = goal_id, 
+                            scoring_system_id = scoring_system_id, 
+                            schedule_id = schedule_id)
+
+        db.session.add(new_user_goal)
+
+        try:
+            db.session.commit()
+        except Exception as e:
+            flash("Error: Unable to create new user goal", "danger")
+            print(e)
+            db.session.rollback()
+
     return redirect(url_for("plan_bp.get_plan_home"))

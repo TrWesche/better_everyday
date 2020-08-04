@@ -11,6 +11,9 @@ from application.plan.models.model_user_persona import User_Persona
 from application.plan.models.model_user_habit import User_Habit
 from application.plan.models.model_user_goal import User_Goal
 
+from application.tracking.models.model_scoring_system import Scoring_System
+from application.tracking.models.model_reminder_schedule import Reminder_Schedule
+
 
 os.environ['DATABASE_URL'] = "postgres:///better-everyday-test"
 
@@ -227,4 +230,30 @@ with app.app_context():
     )
 
     db.session.add_all([u1_p1, u1_p2, u2_p1, u2_p2, u1_h1, u1_h2, u2_h1, u2_h2, u2_h3, u1_g1, u1_g2, u2_g1, u2_g2, u2_g3])
+    db.session.commit()
+
+
+    score1 = Scoring_System(
+        id = 1,
+        title = "Default",
+        description = "Default Scoring System",
+        public = True
+    )
+
+    sched1 = Reminder_Schedule(    
+        id = 1,
+        title = "Default",
+        description = "Default Schedule",
+        public = True,
+        global_time = "1900-01-01 20:00:00-06",
+        monday = True,
+        tuesday = True,
+        wednesday = True,
+        thursday = True,
+        friday = True,
+        saturday = False,
+        sunday = False
+    )
+
+    db.session.add_all([score1, sched1])
     db.session.commit()

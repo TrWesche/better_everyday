@@ -10,7 +10,7 @@ class User_Habit(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
 
-    persona_id = db.Column(db.Integer, db.ForeignKey('persona.id'))
+    persona_id = db.Column(db.Integer, db.ForeignKey('user_persona.persona_id'))
 
     habit_id = db.Column(db.Integer, db.ForeignKey('habit.id'), nullable = False)
 
@@ -18,3 +18,6 @@ class User_Habit(db.Model):
     
     schedule_id = db.Column(db.Integer, db.ForeignKey('reminder_schedule.id'))
 
+    persona = db.relationship("User_Persona", primaryjoin=("and_(User_Persona.persona_id == User_Habit.persona_id)"), backref='habits')
+
+    habit = db.relationship("Habit", primaryjoin="and_(User_Habit.habit_id == Habit.id)")

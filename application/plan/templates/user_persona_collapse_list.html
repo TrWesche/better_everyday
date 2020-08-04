@@ -23,18 +23,40 @@
                         <p>Over the Last 7 Days</p>
                     </div>
                     
+                    <!-- #!!!# This causes to many queries, need to revisit -->
                     <div class="col-12 col-md-6 col-lg-3 mt-4">
                         <h5>Linked Habits</h5>
-                        <p>List of Habits</p>
-                        <br>
-                        <p>Linked to this Persona</p>
+                        {% if persona[0].habits %}
+                        
+                        <ul class="list-group">
+                        {% for user_habit in persona[0].habits %}
+                            <li class="list-group-item">{{ user_habit.habit.title }}</li>
+                        {% endfor %}
+                        </ul>
+
+                        {% else %}
+
+                        <p>This Persona Has No Linked Habits</p>
+                        
+                        {% endif %}
                     </div>
 
+                    <!-- #!!!# This causes to many queries, need to revisit -->
                     <div class="col-12 col-md-6 col-lg-3 mt-4">
                         <h5>Linked Goals</h5>
-                        <p>List of Goals</p>
-                        <br>
-                        <p>Linked to this Persona</p>
+                        {% if persona[0].goals %}
+                        
+                        <ul class="list-group">
+                        {% for user_goal in persona[0].goals %}
+                            <li class="list-group-item">{{ user_goal.goal.title }}</li>
+                        {% endfor %}
+                        </ul>
+
+                        {% else %}
+
+                        <p>This Persona Has No Linked Goals</p>
+                        
+                        {% endif %}
                     </div>
 
                 </div>

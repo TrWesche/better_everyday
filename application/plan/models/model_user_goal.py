@@ -10,7 +10,7 @@ class User_Goal(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
 
-    persona_id = db.Column(db.Integer, db.ForeignKey('persona.id'))
+    persona_id = db.Column(db.Integer, db.ForeignKey('user_persona.persona_id'))
 
     goal_id = db.Column(db.Integer, db.ForeignKey('goal.id'), nullable = False)
 
@@ -18,3 +18,6 @@ class User_Goal(db.Model):
     
     schedule_id = db.Column(db.Integer, db.ForeignKey('reminder_schedule.id'))
 
+    persona = db.relationship("User_Persona", primaryjoin=("and_(User_Persona.persona_id == User_Goal.persona_id)"), backref='goals')
+
+    goal = db.relationship("Goal", primaryjoin="and_(User_Goal.goal_id == Goal.id)")

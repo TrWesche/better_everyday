@@ -23,19 +23,26 @@
                         <p>Over the Last 7 Days</p>
                     </div>
                     
+                    <!-- #!!!# This causes to many queries, need to revisit -->
                     <div class="col-12 col-md-6 col-lg-3 mt-4">
                         <h5>Linked Personas</h5>
-                        <p>List of Personas</p>
-                        <br>
-                        <p>Linked to this Goal</p>
-                    </div>
+                        {% if goal[0].persona %}
+                        
+                        <p>{{ goal[0].persona.persona.title }}</p>
 
+                        {% else %}
+
+                        <p>This Goal is not linked to a Persona</p>
+                        
+                        {% endif %}
+                    </div>
+<!-- 
                     <div class="col-12 col-md-6 col-lg-3 mt-4">
                         <h5>Linked Habits</h5>
                         <p>List of Habits</p>
                         <br>
                         <p>Linked to this Goal</p>
-                    </div>
+                    </div> -->
 
                 </div>
 
