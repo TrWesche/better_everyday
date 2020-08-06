@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Improvement Plan{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-4 display-3">My Development Plan</h1>
+
+    {% if persona_habits %}
+
+    {% for persona in persona_habits %}
+    <p> {{ persona }} </p>
+    {% endfor %}
+
+    {% else %}
+
+    {% endif %}
+
+    <p>GOALS!!!!!</p>
+
+    {% if persona_goals %}
+
+    {% for persona in persona_goals %}
+    <p> {{ persona }} </p>
+    {% endfor %}
+
+    {% else %}
+
+    {% endif %}
+
+    <div class="row mt-5">
+        <div class="col">
+            <div class="card">
+                <div class="card-header" role="tablist">
+                    <ul class="nav nav-tabs card-header-tabs">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="show-persona-list" data-toggle="list" href="#persona-list" role="tab" aria-controls="persona">Personas</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="show-habit-list" data-toggle="list" href="#habit-list" role="tab" aria-controls="habit">Habits</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="show-goal-list" data-toggle="list" href="#goal-list" role="tab" aria-controls="goal">Goals</a>
+                        </li>
+                    </ul>
+                </div>
+
+
+
+            </div>
+        </div>
+    </div>
+  
+
+</div>
+
+{% endblock %}

@@ -17,6 +17,8 @@ class User(db.Model):
 
     username = db.Column(db.String(50), db.ForeignKey('authentication.username'), unique=True)
 
+    public = db.Column(db.Boolean, default=False)
+
     # auth = db.relationship('Authentication', backref='user', cascade="all, delete-orphan")
 
     personas = db.relationship(

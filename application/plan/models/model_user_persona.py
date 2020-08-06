@@ -12,4 +12,6 @@ class User_Persona(db.Model):
 
     persona_id = db.Column(db.Integer, db.ForeignKey('persona.id'), nullable = False)
 
+    description_private = db.Column(db.String(500))
+
     persona = db.relationship("Persona", primaryjoin="and_(User_Persona.persona_id == Persona.id)")

@@ -14,4 +14,4 @@ class Scoring_System_Params(db.Model):
 
     score_output = db.Column(db.String(10), nullable = False)
 
-    title = db.Column(db.String(50), nullable = False)
+    name_en = db.Column(db.String(50), nullable = False)

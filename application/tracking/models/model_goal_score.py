@@ -6,7 +6,7 @@ class Goal_Score(db.Model):
 
     id = db.Column(db.Integer, primary_key = True)
 
-    date = db.Column(db.DateTime, nullable = False)
+    date = db.Column(db.DateTime(timezone=True), nullable = False)
 
     score = db.Column(db.Float, nullable = False)
 

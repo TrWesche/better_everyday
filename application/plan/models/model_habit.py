@@ -6,9 +6,9 @@ class Habit(db.Model):
 
     id = db.Column(db.Integer, primary_key = True)
 
-    title = db.Column(db.String(50), nullable = False)
+    title_en = db.Column(db.String(50), nullable = False)
 
-    description = db.Column(db.String(500), nullable = False)
+    description_public = db.Column(db.String(500), nullable = False)
 
     # Collation column is intended to collate multiple versions of the same "Habit" in the future for improved linking to communities
-    collate_titles = db.Column(db.Integer)
+    collate = db.Column(db.Integer)

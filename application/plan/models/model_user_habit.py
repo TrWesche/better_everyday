@@ -10,14 +10,20 @@ class User_Habit(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable = False)
 
-    persona_id = db.Column(db.Integer, db.ForeignKey('user_persona.persona_id'))
-
-    habit_id = db.Column(db.Integer, db.ForeignKey('habit.id'), nullable = False)
+    user_persona_id = db.Column(db.Integer, db.ForeignKey('user_persona.id'))
 
     scoring_system_id = db.Column(db.Integer, db.ForeignKey('scoring_system.id'))
     
     schedule_id = db.Column(db.Integer, db.ForeignKey('reminder_schedule.id'))
 
-    persona = db.relationship("User_Persona", primaryjoin=("and_(User_Persona.persona_id == User_Habit.persona_id)"), backref='habits')
+    habit_id = db.Column(db.Integer, db.ForeignKey('habit.id'), nullable = False)
+
+    linked_goal_id = db.Column(db.Integer, db.ForeignKey('user_goal.id'))
+
+    description_private = db.Column(db.String(500))
+
+    persona = db.relationship("Persona", secondary = "user_persona", primaryjoin=("User_Habit.user_persona_id == User_Persona.id"), secondaryjoin=("User_Persona.id == Persona.id"))
 
     habit = db.relationship("Habit", primaryjoin="and_(User_Habit.habit_id == Habit.id)")
+
+    goal = db.relationship("User_Goal", primaryjoin=("and_(User_Habit.linked_goal_id == User_Goal.id)"))

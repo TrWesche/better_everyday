@@ -4,11 +4,11 @@ from sqlalchemy import exc
 
 # Import Models
 from .models.model_persona import Persona
+from .models.model_user_persona import User_Persona
 from .models.model_habit import Habit
 from .models.model_goal import Goal
-from .models.model_user_persona import User_Persona
-from .models.model_user_habit import User_Habit
 from .models.model_user_goal import User_Goal
+from .models.model_user_habit import User_Habit
 
 # Import Forms
 from .forms.form_user_persona import UserPersonaFrom
@@ -72,6 +72,43 @@ def get_plan_home():
         flash("You must be logged in to access that page.", "warning")
         return redirect(url_for("home_bp.homepage"))
 
+# @plan_bp.route("/test", methods=["GET"])
+# def get_plan_home_test():
+#     if g.user:
+#         # user_plan = User_Persona.query\
+#         #     .join(Persona, User_Persona.persona_id == Persona.id)\
+#         #     .add_columns(Persona.title, Persona.description)\
+#         #     .join(User_Habit, User_Persona.persona_id == User_Habit.persona_id)\
+#         #     .add_columns(User_Habit.id)\
+#         #     .join(Habit, User_Habit.id == Habit.id)\
+#         #     .add_columns(Habit.title, Habit.description)\
+#         #     .join(User_Goal, User_Persona.persona_id == User_Goal.persona_id)\
+#         #     .add_columns(User_Goal.id)\
+#         #     .join(Goal, User_Goal.id == Goal.id)\
+#         #     .add_columns(Goal.title, Goal.description)\
+#         #     .filter(User_Persona.user_id == g.user.id).all()
+
+#         persona_habits = User_Persona.query\
+#             .join(Persona, User_Persona.persona_id == Persona.id)\
+#             .add_columns(Persona.title, Persona.description)\
+#             .join(User_Habit, User_Persona.persona_id == User_Habit.persona_id)\
+#             .add_columns(User_Habit.id)\
+#             .join(Habit, User_Habit.id == Habit.id)\
+#             .add_columns(Habit.title, Habit.description)\
+#             .filter(User_Persona.user_id == g.user.id).all()
+
+#         persona_goals = User_Persona.query\
+#             .join(Persona, User_Persona.persona_id == Persona.id)\
+#             .add_columns(Persona.title, Persona.description)\
+#             .join(User_Goal, User_Persona.persona_id == User_Goal.persona_id)\
+#             .add_columns(User_Goal.id)\
+#             .join(Goal, User_Goal.id == Goal.id)\
+#             .add_columns(Goal.title, Goal.description)\
+#             .filter(User_Persona.user_id == g.user.id).all()
+
+#     return render_template("plan_test.html", persona_habits = persona_habits, persona_goals = persona_goals)
+
+
 # TODO: Convert to AJAX
 @plan_bp.route("/add_user_persona", methods=["POST"])
 def add_user_persona():
@@ -114,7 +151,6 @@ def add_user_persona():
 def add_user_habit():
     form = UserHabitForm(request.form)
 
-    #!!!# Is there a better way to retrieve the value choices for the persona list?
     user_personas = User_Persona.query.filter(User_Persona.user_id == g.user.id).all()
     persona_list = [(persona.persona_id, "persona") for persona in user_personas] # This works becuase the validate_on_submit only checks the id (first) value of the tuple
     form.persona.choices = persona_list
