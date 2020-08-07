@@ -1,18 +1,22 @@
 <div class="accordion" id="accordionGoal">
     {% for goal in user_goals %}
     <div class="card">
-        <div class="card-header" id="heading{{ goal.title }}">
+        <div class="card-header" id="heading{{ goal.User_Goal.id }}">
             <h2 class="mb-0">
-            <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse{{ goal.title }}" aria-expanded="false" aria-controls="collapse{{ goal.title }}">
-                {{ goal.title }}
+            <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse{{ goal.User_Goal.id }}" aria-expanded="false" aria-controls="collapse{{ goal.User_Goal.id }}">
+                {{ goal.title_en }}
             </button>
             </h2>
         </div>
     
-        <div id="collapse{{ goal.title }}" class="collapse" aria-labelledby="heading{{ goal.title }}" data-parent="#accordionGoal">
+        <div id="collapse{{ goal.User_Goal.id }}" class="collapse" aria-labelledby="heading{{ goal.User_Goal.id }}" data-parent="#accordionGoal">
             <div class="card-body">
                 <div class="row">
-                    <h5 class="card-text ml-3">{{ goal.description }}</h5>
+                    {% if goal.User_Goal.description_private %}
+                        <h5 class="card-text ml-3">{{ goal.User_Goal.description_private }}</h5>
+                    {% else %}
+                        <h5 class="card-text ml-3">{{ goal.description_public }}</h5>
+                    {% endif %}
                 </div>
 
                 <div class="row">
@@ -23,12 +27,11 @@
                         <p>Over the Last 7 Days</p>
                     </div>
                     
-                    <!-- #!!!# This causes to many queries, need to revisit -->
                     <div class="col-12 col-md-6 col-lg-3 mt-4">
                         <h5>Linked Personas</h5>
-                        {% if goal[0].persona %}
+                        {% if goal.persona_id %}
                         
-                        <p>{{ goal[0].persona.persona.title }}</p>
+                        <p>{{ goal.persona_title }}</p>
 
                         {% else %}
 

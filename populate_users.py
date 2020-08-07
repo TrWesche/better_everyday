@@ -13,7 +13,9 @@ from application.plan.models.model_user_goal import User_Goal
 
 from application.tracking.models.model_scoring_system import Scoring_System
 from application.tracking.models.model_reminder_schedule import Reminder_Schedule
-
+from application.tracking.models.model_goal_score import Goal_Score
+from application.tracking.models.model_habit_score import Habit_Score
+from application.tracking.models.model_scoring_system_params import Scoring_System_Params
 
 os.environ['DATABASE_URL'] = "postgres:///better-everyday-test-v2"
 
@@ -118,8 +120,8 @@ with app.app_context():
     score1 = Scoring_System(
         id = 1,
         user_id = 1,
-        title_en = "User1 Scoring System 1",
-        description = "Some Sort of Scoring System 1",
+        title_en = "User1 US Grades System 1",
+        description = "US Grading System 1",
         public = True
     )
 
@@ -146,6 +148,9 @@ with app.app_context():
         description = "Some Sort of Scoring System 4",
         public = False
     )
+
+   
+
 
     sched1 = Reminder_Schedule(    
         id = 1,
@@ -181,6 +186,166 @@ with app.app_context():
 
     db.session.add_all([score1, score2, score3, score4, sched1, sched2])
     db.session.commit()
+
+
+    score1_param_1 = Scoring_System_Params(
+        id = 1,
+        scoring_system_id = 1,
+        score_bp = 0,
+        score_input = 0,
+        score_output = 0,
+        name_en = "F"
+    )
+
+    score1_param_2 = Scoring_System_Params(
+        id = 2,
+        scoring_system_id = 1,
+        score_bp = 1,
+        score_input = 59,
+        score_output = 0,
+        name_en = "F"
+    )
+
+    score1_param_3 = Scoring_System_Params(
+        id = 3,
+        scoring_system_id = 1,
+        score_bp = 2,
+        score_input = 69,
+        score_output = 1,
+        name_en = "D"
+    )
+
+    score1_param_4 = Scoring_System_Params(
+        id = 4,
+        scoring_system_id = 1,
+        score_bp = 3,
+        score_input = 79,
+        score_output = 2,
+        name_en = "C"
+    )
+
+    score1_param_5 = Scoring_System_Params(
+        id = 5,
+        scoring_system_id = 1,
+        score_bp = 4,
+        score_input = 89,
+        score_output = 3,
+        name_en = "B"
+    )
+
+    score1_param_6 = Scoring_System_Params(
+        id = 6,
+        scoring_system_id = 1,
+        score_bp = 4,
+        score_input = 100,
+        score_output = 4,
+        name_en = "A"
+    )
+
+    score2_param_1 = Scoring_System_Params(
+        id = 7,
+        scoring_system_id = 2,
+        score_bp = 0,
+        score_input = 0,
+        score_output = 0,
+        name_en = None
+    )
+
+    score2_param_2 = Scoring_System_Params(
+        id = 8,
+        scoring_system_id = 2,
+        score_bp = 1,
+        score_input = 50,
+        score_output = 2,
+        name_en = None
+    )
+
+    score2_param_3 = Scoring_System_Params(
+        id = 9,
+        scoring_system_id = 2,
+        score_bp = 1,
+        score_input = 100,
+        score_output = 5,
+        name_en = None
+    )
+
+    score3_param_1 = Scoring_System_Params(
+        id = 10,
+        scoring_system_id = 3,
+        score_bp = 0,
+        score_input = 0,
+        score_output = 0,
+        name_en = None
+    )
+
+    score3_param_2 = Scoring_System_Params(
+        id = 11,
+        scoring_system_id = 3,
+        score_bp = 1,
+        score_input = 10,
+        score_output = 1,
+        name_en = None
+    )
+
+    score3_param_3 = Scoring_System_Params(
+        id = 12,
+        scoring_system_id = 3,
+        score_bp = 2,
+        score_input = 60,
+        score_output = 5,
+        name_en = None
+    )
+
+    score3_param_4 = Scoring_System_Params(
+        id = 13,
+        scoring_system_id = 3,
+        score_bp = 3,
+        score_input = 90,
+        score_output = 10,
+        name_en = None
+    )
+
+    score4_param_1 = Scoring_System_Params(
+        id = 14,
+        scoring_system_id = 4,
+        score_bp = 0,
+        score_input = 0,
+        score_output = 0,
+        name_en = "You can do better then that!"
+    )
+
+    score4_param_2 = Scoring_System_Params(
+        id = 15,
+        scoring_system_id = 4,
+        score_bp = 1,
+        score_input = 30,
+        score_output = 50,
+        name_en = "Just a little more!"
+    )
+
+    score4_param_3 = Scoring_System_Params(
+        id = 16,
+        scoring_system_id = 4,
+        score_bp = 2,
+        score_input = 60,
+        score_output = 100,
+        name_en = "Target Achieved!"
+    )
+
+    score4_param_4 = Scoring_System_Params(
+        id = 17,
+        scoring_system_id = 4,
+        score_bp = 3,
+        score_input = 72,
+        score_output = 120,
+        name_en = "Going beyond the call of duty!"
+    )
+
+    db.session.add_all([score1_param_1, score1_param_2, score1_param_3, score1_param_4, score1_param_5, score1_param_6, score2_param_1, 
+                        score2_param_2, score2_param_3, score3_param_1, score3_param_2, score3_param_3, score3_param_4, score4_param_1,
+                        score4_param_2, score4_param_3, score4_param_4])
+    db.session.commit()
+
 
 
     u1_p1 = User_Persona(
@@ -385,3 +550,8 @@ with app.app_context():
 
     db.session.add_all([u1_h1, u1_h2, u1_h3, u2_h1, u2_h2, u2_h3])
     db.session.commit()
+
+
+
+Goal_Score
+Habit_Score

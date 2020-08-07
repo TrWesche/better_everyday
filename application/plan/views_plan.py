@@ -27,86 +27,105 @@ plan_bp = Blueprint(
 )
 
 
+# @plan_bp.route("/", methods=["GET"])
+# def get_plan_home():
+#     user_personas = None
+#     user_habits = None
+#     user_goals = None
+
+#     if g.user:
+#         user_personas = User_Persona.query\
+#             .join(Persona, User_Persona.persona_id == Persona.id)\
+#             .add_columns(User_Persona.user_id, User_Persona.id, Persona.id, Persona.title, Persona.description)\
+#             .filter(User_Persona.user_id == g.user.id).all()
+
+#         user_habits = User_Habit.query\
+#             .join(Habit, User_Habit.habit_id == Habit.id)\
+#             .add_columns(User_Habit.user_id, User_Habit.id, Habit.id, Habit.title, Habit.description)\
+#             .filter(User_Habit.user_id == g.user.id).all()
+
+#         user_goals = User_Goal.query\
+#             .join(Goal, User_Goal.goal_id == Goal.id)\
+#             .add_columns(User_Goal.user_id, User_Goal.id, Goal.id, Goal.title, Goal.description)\
+#             .filter(User_Goal.user_id == g.user.id).all()
+
+#         persona_list = [(persona.id, persona.title) for persona in user_personas]
+
+#         user_persona_form = UserPersonaFrom()
+
+#         user_habit_form = UserHabitForm()
+#         user_habit_form.persona.choices = persona_list
+
+#         user_goal_form = UserGoalForm()
+#         user_goal_form.persona.choices = persona_list
+
+#         return render_template(
+#             "plan_home.html", 
+#             user_personas=user_personas, 
+#             user_habits=user_habits, 
+#             user_goals=user_goals,
+#             user_persona_form=user_persona_form,
+#             user_habit_form=user_habit_form,
+#             user_goal_form=user_goal_form)
+
+#     else:
+#         flash("You must be logged in to access that page.", "warning")
+#         return redirect(url_for("home_bp.homepage"))
+
 @plan_bp.route("/", methods=["GET"])
 def get_plan_home():
-    user_personas = None
-    user_habits = None
-    user_goals = None
-
     if g.user:
+
         user_personas = User_Persona.query\
             .join(Persona, User_Persona.persona_id == Persona.id)\
-            .add_columns(User_Persona.user_id, User_Persona.id, Persona.id, Persona.title, Persona.description)\
+            .add_columns(User_Persona.user_id, Persona.title_en, Persona.description_public)\
             .filter(User_Persona.user_id == g.user.id).all()
 
         user_habits = User_Habit.query\
             .join(Habit, User_Habit.habit_id == Habit.id)\
-            .add_columns(User_Habit.user_id, User_Habit.id, Habit.id, Habit.title, Habit.description)\
+            .add_columns(User_Habit.user_id, Habit.title_en, Habit.description_public)\
+            .join(User_Persona, User_Persona.id == User_Habit.user_persona_id)\
+            .add_columns(User_Persona.id.label("persona_id"))\
+            .join(Persona, User_Persona.id == Persona.id)\
+            .add_columns(Persona.title_en.label("persona_title"))\
             .filter(User_Habit.user_id == g.user.id).all()
 
         user_goals = User_Goal.query\
             .join(Goal, User_Goal.goal_id == Goal.id)\
-            .add_columns(User_Goal.user_id, User_Goal.id, Goal.id, Goal.title, Goal.description)\
+            .add_columns(User_Goal.user_id, Goal.title_en, Goal.description_public)\
+            .join(User_Persona, User_Persona.id == User_Goal.user_persona_id)\
+            .add_columns(User_Persona.id.label("persona_id"))\
+            .join(Persona, User_Persona.id == Persona.id)\
+            .add_columns(Persona.title_en.label("persona_title"))\
             .filter(User_Goal.user_id == g.user.id).all()
 
-        persona_list = [(persona.id, persona.title) for persona in user_personas]
+        persona_render_list = []
+        if user_personas:
+            for persona in user_personas:
+                append_obj = {}
+                append_obj["user_id"] = persona.user_id
+                append_obj["persona_id"] = persona.User_Persona.persona_id
+                append_obj["persona_title"] = persona.title_en
+                append_obj["description_private"] = persona.User_Persona.description_private
+                append_obj["description_public"] = persona.description_public
+                append_obj["linked_habits"] = []
+                append_obj["linked_goals"] = []
 
-        user_persona_form = UserPersonaFrom()
+                for habit in user_habits:
+                    if habit.User_Habit.user_persona_id == persona.User_Persona.id:
+                        append_obj.get("linked_habits").append(habit.title_en)
 
-        user_habit_form = UserHabitForm()
-        user_habit_form.persona.choices = persona_list
+                for goal in user_goals:
+                    if goal.User_Goal.user_persona_id == persona.User_Persona.id:
+                        append_obj.get("linked_goals").append(goal.title_en)
 
-        user_goal_form = UserGoalForm()
-        user_goal_form.persona.choices = persona_list
+                persona_render_list.append(append_obj)
 
-        return render_template(
-            "plan_home.html", 
-            user_personas=user_personas, 
-            user_habits=user_habits, 
-            user_goals=user_goals,
-            user_persona_form=user_persona_form,
-            user_habit_form=user_habit_form,
-            user_goal_form=user_goal_form)
+        return render_template("plan_home.html", user_personas = user_personas, user_habits = user_habits, user_goals = user_goals, persona_render_list = persona_render_list)
 
     else:
         flash("You must be logged in to access that page.", "warning")
         return redirect(url_for("home_bp.homepage"))
-
-# @plan_bp.route("/test", methods=["GET"])
-# def get_plan_home_test():
-#     if g.user:
-#         # user_plan = User_Persona.query\
-#         #     .join(Persona, User_Persona.persona_id == Persona.id)\
-#         #     .add_columns(Persona.title, Persona.description)\
-#         #     .join(User_Habit, User_Persona.persona_id == User_Habit.persona_id)\
-#         #     .add_columns(User_Habit.id)\
-#         #     .join(Habit, User_Habit.id == Habit.id)\
-#         #     .add_columns(Habit.title, Habit.description)\
-#         #     .join(User_Goal, User_Persona.persona_id == User_Goal.persona_id)\
-#         #     .add_columns(User_Goal.id)\
-#         #     .join(Goal, User_Goal.id == Goal.id)\
-#         #     .add_columns(Goal.title, Goal.description)\
-#         #     .filter(User_Persona.user_id == g.user.id).all()
-
-#         persona_habits = User_Persona.query\
-#             .join(Persona, User_Persona.persona_id == Persona.id)\
-#             .add_columns(Persona.title, Persona.description)\
-#             .join(User_Habit, User_Persona.persona_id == User_Habit.persona_id)\
-#             .add_columns(User_Habit.id)\
-#             .join(Habit, User_Habit.id == Habit.id)\
-#             .add_columns(Habit.title, Habit.description)\
-#             .filter(User_Persona.user_id == g.user.id).all()
-
-#         persona_goals = User_Persona.query\
-#             .join(Persona, User_Persona.persona_id == Persona.id)\
-#             .add_columns(Persona.title, Persona.description)\
-#             .join(User_Goal, User_Persona.persona_id == User_Goal.persona_id)\
-#             .add_columns(User_Goal.id)\
-#             .join(Goal, User_Goal.id == Goal.id)\
-#             .add_columns(Goal.title, Goal.description)\
-#             .filter(User_Persona.user_id == g.user.id).all()
-
-#     return render_template("plan_test.html", persona_habits = persona_habits, persona_goals = persona_goals)
 
 
 # TODO: Convert to AJAX

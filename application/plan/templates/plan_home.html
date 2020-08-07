@@ -25,15 +25,13 @@
 
                 <div class="card-body tab-content" id="nav-tabContent">
                     <div class="tab-pane fade show active" id="persona-list" role="tabpanel" aria-labelledby="show-persona-list">
-                    {% if user_personas %}
+                    {% if persona_render_list %}
 
                         {% include "user_persona_collapse_list.html" ignore missing %}
 
                     {% else %}
                         <p>You have not created any Personas yet!</p>
                     {% endif %}
-
-                        {% include "user_persona_collapse_add_form.html" ignore missing %}
 
                     </div>
 
@@ -48,10 +46,9 @@
 
                     {% endif %}
 
-                        {% include "user_habit_collapse_add_form.html" ignore missing %}
-
+    
                     </div>
-                    
+                        
                     <div class="tab-pane fade" id="goal-list" role="tabpanel" aria-labelledby="show-goal-list">
                     {% if user_goals %}
 
@@ -63,10 +60,7 @@
                         
                     {% endif %}
 
-                        {% include "user_goal_collapse_add_form.html" ignore missing %}
-
                     </div>
-                </div>
 
             </div>
         </div>

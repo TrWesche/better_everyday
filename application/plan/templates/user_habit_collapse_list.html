@@ -1,18 +1,22 @@
 <div class="accordion" id="accordionHabit">
     {% for habit in user_habits %}
     <div class="card">
-        <div class="card-header" id="heading{{ habit.title }}">
+        <div class="card-header" id="heading{{ habit.User_Habit.id }}">
             <h2 class="mb-0">
-            <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse{{ habit.title }}" aria-expanded="false" aria-controls="collapse{{ habit.title }}">
-                {{ habit.title }}
+            <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse{{ habit.User_Habit.id }}" aria-expanded="false" aria-controls="collapse{{ habit.User_Habit.id }}">
+                {{ habit.title_en }}
             </button>
             </h2>
         </div>
     
-        <div id="collapse{{ habit.title }}" class="collapse" aria-labelledby="heading{{ habit.title }}" data-parent="#accordionHabit">
+        <div id="collapse{{ habit.User_Habit.id }}" class="collapse" aria-labelledby="heading{{ habit.User_Habit.id }}" data-parent="#accordionHabit">
             <div class="card-body">
                 <div class="row">
-                    <h5 class="card-text ml-3">{{ habit.description }}</h5>
+                    {% if habit.User_Habit.description_private %}
+                        <h5 class="card-text ml-3">{{ habit.User_Habit.description_private }}</h5>
+                    {% else %}
+                        <h5 class="card-text ml-3">{{ habit.description_public }}</h5>
+                    {% endif %}
                 </div>
 
                 <div class="row">
@@ -23,12 +27,11 @@
                         <p>Over the Last 7 Days</p>
                     </div>
                     
-                    <!-- #!!!# This causes to many queries, need to revisit -->
                     <div class="col-12 col-md-6 col-lg-3 mt-4">
                         <h5>Linked Personas</h5>
-                        {% if habit[0].persona %}
+                        {% if habit.persona_id %}
                         
-                        <p>{{ habit[0].persona.persona.title }}</p>
+                        <p>{{ habit.persona_title }}</p>
 
                         {% else %}
 

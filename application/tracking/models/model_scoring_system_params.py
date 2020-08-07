@@ -12,6 +12,6 @@ class Scoring_System_Params(db.Model):
 
     score_input = db.Column(db.Float, nullable = False)
 
-    score_output = db.Column(db.String(10), nullable = False)
+    score_output = db.Column(db.Float, nullable = False)
 
-    name_en = db.Column(db.String(50), nullable = False)
+    name_en = db.Column(db.String(50))
