@@ -1,0 +1,37 @@
+<form action="{{ url_for('plan_bp.add_user_goal')}}" method="post">
+    {{ user_goal_form.hidden_tag() }}
+
+    {% for field in user_goal_form if field.widget.input_type != 'hidden'%}
+
+    <div class="form-group">
+    {% if field.type == "BooleanField" %}
+        <div class="form-check">
+            {{ field(class_="form-check form-check-input")}}
+            {{ field.label(class_="form-check-label") }}
+        </div>
+
+    {% elif field.type == "SelectField" %}
+
+        {{ field.label(class_="font-weight-bolder") }}
+        {{ field(class_="form-control")}}
+
+    {% else %}
+
+        {{ field.label(class_="font-weight-bolder") }}
+        {{ field(class_="form-control")}}
+
+    {% endif %}
+
+    {% for error in field.errors %}
+        <small class="form-text text-danger">
+        {{error}}
+        </small>
+    {% endfor %}
+    </div>
+
+    {% endfor %}
+
+    <a href="/" class="btn btn-secondary my-2">Cancel</a>
+    <button type="submit" class="btn btn-primary my-2">Submit</button>
+</form>
+

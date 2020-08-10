@@ -8,6 +8,13 @@
 
     <div class="row mt-5">
         <div class="col">
+            <a href="{{ url_for('plan_bp.get_new_persona') }}" class="btn btn-info btn-lg" role="button" aria-disabled="true">Create New</a>   
+        </div>
+    </div>
+
+
+    <div class="row mt-3">
+        <div class="col">
             <div class="card">
                 <div class="card-header" role="tablist">
                     <ul class="nav nav-tabs card-header-tabs">
@@ -69,4 +76,10 @@
 
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://unpkg.com/axios/dist/axios.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="module" src="static/render_stepcharts.js"></script>
 {% endblock %}

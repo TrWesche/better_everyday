@@ -39,7 +39,14 @@
                         
                         {% endif %}
                     </div>
-<!-- 
+                    
+                    {% if habit.User_Habit.scoring_system_id %}
+                    <div class="col-12 col-md-6 col-lg-3 mt-4 gviz_stepchart" id="gviz_stepchart_{{ habit.User_Habit.scoring_system_id }}" data-sys="{{ habit.User_Habit.scoring_system_id }}" data-title="Scoring System">
+                        <h5>Scoring System</h5>
+                    </div>
+                    {% endif %}
+
+                    <!-- 
                     <div class="col-12 col-md-6 col-lg-3 mt-4">
                         <h5>Linked Goals</h5>
                         <p>List of Goals</p>

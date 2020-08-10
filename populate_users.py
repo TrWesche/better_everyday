@@ -236,7 +236,7 @@ with app.app_context():
     score1_param_6 = Scoring_System_Params(
         id = 6,
         scoring_system_id = 1,
-        score_bp = 4,
+        score_bp = 5,
         score_input = 100,
         score_output = 4,
         name_en = "A"
@@ -263,7 +263,7 @@ with app.app_context():
     score2_param_3 = Scoring_System_Params(
         id = 9,
         scoring_system_id = 2,
-        score_bp = 1,
+        score_bp = 2,
         score_input = 100,
         score_output = 5,
         name_en = None
@@ -551,7 +551,3 @@ with app.app_context():
     db.session.add_all([u1_h1, u1_h2, u1_h3, u2_h1, u2_h2, u2_h3])
     db.session.commit()
 
-
-
-Goal_Score
-Habit_Score

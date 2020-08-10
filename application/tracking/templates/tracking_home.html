@@ -11,4 +11,14 @@
     {% endif %}
 </div>
 
+<div class="gviz_stepchart" id="gviz_stepchart_div1" data-sys="1" data-title="Chart 1"></div>
+
+<div class="gviz_stepchart" id="gviz_stepchart_div2" data-sys="2" data-title="Chart 2"></div>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://unpkg.com/axios/dist/axios.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="module" src="static/render_stepcharts.js"></script>
 {% endblock %}

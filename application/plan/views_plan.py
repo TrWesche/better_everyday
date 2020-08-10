@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, flash, request, session, g, url_for
 from flask import current_app as app
-from sqlalchemy import exc
+from sqlalchemy import exc, or_
 
 # Import Models
 from .models.model_persona import Persona
@@ -9,6 +9,10 @@ from .models.model_habit import Habit
 from .models.model_goal import Goal
 from .models.model_user_goal import User_Goal
 from .models.model_user_habit import User_Habit
+
+from ..tracking.models.model_scoring_system import Scoring_System
+from ..tracking.models.model_scoring_system_params import Scoring_System_Params
+from ..tracking.models.model_reminder_schedule import Reminder_Schedule
 
 # Import Forms
 from .forms.form_user_persona import UserPersonaFrom
@@ -99,6 +103,7 @@ def get_plan_home():
             .add_columns(Persona.title_en.label("persona_title"))\
             .filter(User_Goal.user_id == g.user.id).all()
 
+
         persona_render_list = []
         if user_personas:
             for persona in user_personas:
@@ -112,11 +117,11 @@ def get_plan_home():
                 append_obj["linked_goals"] = []
 
                 for habit in user_habits:
-                    if habit.User_Habit.user_persona_id == persona.User_Persona.id:
+                    if habit.User_Habit.user_persona_id == persona.User_Persona.persona_id:
                         append_obj.get("linked_habits").append(habit.title_en)
 
                 for goal in user_goals:
-                    if goal.User_Goal.user_persona_id == persona.User_Persona.id:
+                    if goal.User_Goal.user_persona_id == persona.User_Persona.persona_id:
                         append_obj.get("linked_goals").append(goal.title_en)
 
                 persona_render_list.append(append_obj)
@@ -128,16 +133,89 @@ def get_plan_home():
         return redirect(url_for("home_bp.homepage"))
 
 
-# TODO: Convert to AJAX
+@plan_bp.route("/new/persona", methods=["GET"])
+def get_new_persona():
+    if g.user:
+
+        user_persona_form = UserPersonaFrom()
+
+        return render_template("plan_new_persona.html",
+                user_persona_form=user_persona_form)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
+
+
+@plan_bp.route("/new/habit", methods=["GET"])
+def get_new_habit():
+    if g.user:
+        user_personas = User_Persona.query\
+            .join(Persona, User_Persona.persona_id == Persona.id)\
+            .add_columns(Persona.id, Persona.title_en)\
+            .filter(User_Persona.user_id == g.user.id).all()
+
+        persona_list = [(persona.id, persona.title_en) for persona in user_personas]
+
+        user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
+        scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
+
+        user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+        reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
+        
+
+        user_habit_form = UserHabitForm()
+        
+        user_habit_form.persona.choices = persona_list
+        user_habit_form.scoring_system_id.choices = scoring_system_list
+        user_habit_form.schedule_id.choices = reminder_schedule_list
+
+        return render_template("plan_new_habit.html",
+                user_habit_form=user_habit_form)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
+
+
+@plan_bp.route("/new/goal", methods=["GET"])
+def get_new_goal():
+    if g.user:
+        user_personas = User_Persona.query\
+            .join(Persona, User_Persona.persona_id == Persona.id)\
+            .add_columns(Persona.id, Persona.title_en)\
+            .filter(User_Persona.user_id == g.user.id).all()
+
+        persona_list = [(persona.id, persona.title_en) for persona in user_personas]
+
+        user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
+        scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
+
+        user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+        reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
+
+        user_goal_form = UserGoalForm()
+        user_goal_form.persona.choices = persona_list
+        user_goal_form.scoring_system_id.choices = scoring_system_list
+        user_goal_form.schedule_id.choices = reminder_schedule_list
+
+        return render_template("plan_new_goal.html",
+                user_goal_form=user_goal_form)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
+
+
 @plan_bp.route("/add_user_persona", methods=["POST"])
 def add_user_persona():
     form = UserPersonaFrom(request.form)
 
     if form.validate_on_submit():
-        target_persona = Persona.query.filter(Persona.title == form.title.data.lower()).first()
+        target_persona = Persona.query.filter(Persona.title_en == form.title.data.lower()).first()
 
         if not target_persona:
-            target_persona = Persona(title = form.title.data.lower(), description = form.description.data)
+            target_persona = Persona(title_en = form.title.data.lower())
             db.session.add(target_persona)
 
             try:
@@ -146,13 +224,13 @@ def add_user_persona():
                 flash("Error: Unable to create new persona", "danger")
                 print(e)
                 db.session.rollback()
-                return redirect(url_for("plan_bp.get_plan_home"))
+                return redirect(url_for("plan_bp.get_new_persona"))
 
         active = form.active.data
         user_id = g.user.id
         persona_id = target_persona.id
 
-        new_user_persona = User_Persona(active = active, user_id = user_id, persona_id = persona_id)
+        new_user_persona = User_Persona(active = active, user_id = user_id, persona_id = persona_id, description_private = form.description.data)
 
         db.session.add(new_user_persona)
 
@@ -162,6 +240,7 @@ def add_user_persona():
             flash("Error: Unable to create new persona", "danger")
             print(e)
             db.session.rollback()
+            return redirect(url_for("plan_bp.get_new_persona"))
 
     return redirect(url_for("plan_bp.get_plan_home"))
 
@@ -171,16 +250,24 @@ def add_user_habit():
     form = UserHabitForm(request.form)
 
     user_personas = User_Persona.query.filter(User_Persona.user_id == g.user.id).all()
-    persona_list = [(persona.persona_id, "persona") for persona in user_personas] # This works becuase the validate_on_submit only checks the id (first) value of the tuple
+    persona_list = [(persona.persona_id, "p") for persona in user_personas] # This works becuase the validate_on_submit only checks the id (first) value of the tuple
     form.persona.choices = persona_list
+
+    user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
+    scoring_system_list = [(system.id, "s") for system in user_scoring_systems]
+    form.scoring_system_id.choices = scoring_system_list
+
+    user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+    reminder_schedule_list = [(schedule.id, "s") for schedule in user_reminder_schedule]
+    form.schedule_id.choices = reminder_schedule_list
 
 
     if form.validate_on_submit():
-        target_habit = Habit.query.filter(Habit.title == form.title.data.lower()).first()
+        target_habit = Habit.query.filter(Habit.title_en == form.title.data.lower()).first()
         target_persona = Persona.query.filter(Persona.id == form.persona.data).first()
 
         if not target_habit:
-            target_habit = Habit(title = form.title.data.lower(), description = form.description.data)
+            target_habit = Habit(title_en = form.title.data.lower())
             db.session.add(target_habit)
 
             try:
@@ -189,26 +276,24 @@ def add_user_habit():
                 flash("Error: Unable to create new habit", "danger")
                 print(e)
                 db.session.rollback()
-                return redirect(url_for("plan_bp.get_plan_home"))
+                return redirect(url_for("plan_bp.get_new_habit"))
             
         active = form.active.data
         user_id = g.user.id
         persona_id = target_persona.id
         habit_id = target_habit.id
-
-        # TODO: Add scoring system & schedule selection
-        #!!!# Schedules & Scoring Systems will need to be filtered by user_id as well in order to be scalable.  Will require a change in the model.
-        #!!!# Future version should only show public scoring_systems/schedules (defaults provided by BE) and the scoring systems created by users.
         scoring_system_id = form.scoring_system_id.data
         schedule_id = form.schedule_id.data
 
         new_user_habit = User_Habit(
                             active = active, 
                             user_id = user_id, 
-                            persona_id = persona_id, 
-                            habit_id = habit_id, 
+                            user_persona_id = persona_id, 
                             scoring_system_id = scoring_system_id, 
-                            schedule_id = schedule_id)
+                            schedule_id = schedule_id,
+                            habit_id = habit_id, 
+                            linked_goal_id = None,
+                            description_private = form.description.data)
 
         db.session.add(new_user_habit)
 
@@ -218,6 +303,7 @@ def add_user_habit():
             flash("Error: Unable to create new user habit", "danger")
             print(e)
             db.session.rollback()
+            return redirect(url_for("plan_bp.get_new_habit"))
 
     return redirect(url_for("plan_bp.get_plan_home"))
 
@@ -227,18 +313,24 @@ def add_user_habit():
 def add_user_goal():
     form = UserGoalForm(request.form)
 
-    #!!!# This sucks there has to be a better way
     user_personas = User_Persona.query.filter(User_Persona.user_id == g.user.id).all()
-    persona_list = [(persona.persona_id, "persona") for persona in user_personas] # This works becuase the validate_on_submit only checks the id part of the tuple
+    persona_list = [(persona.persona_id, "p") for persona in user_personas] # This works becuase the validate_on_submit only checks the id part of the tuple
     form.persona.choices = persona_list
 
+    user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
+    scoring_system_list = [(system.id, "s") for system in user_scoring_systems]
+    form.scoring_system_id.choices = scoring_system_list
+
+    user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+    reminder_schedule_list = [(schedule.id, "s") for schedule in user_reminder_schedule]
+    form.schedule_id.choices = reminder_schedule_list
 
     if form.validate_on_submit():
-        target_goal = Goal.query.filter(Goal.title == form.title.data.lower()).first()
+        target_goal = Goal.query.filter(Goal.title_en == form.title.data.lower()).first()
         target_persona = Persona.query.filter(Persona.id == form.persona.data).first()
 
         if not target_goal:
-            target_goal = Goal(title = form.title.data.lower(), description = form.description.data)
+            target_goal = Goal(title_en = form.title.data.lower())
             db.session.add(target_goal)
 
             try:
@@ -247,16 +339,12 @@ def add_user_goal():
                 flash("Error: Unable to create new goal", "danger")
                 print(e)
                 db.session.rollback()
-                return redirect(url_for("plan_bp.get_plan_home"))
+                return redirect(url_for("plan_bp.get_new_goal"))
             
         active = form.active.data
         user_id = g.user.id
         persona_id = target_persona.id
         goal_id = target_goal.id
-
-        # TODO: Add scoring system & schedule selection
-        #!!!# Schedules & Scoring Systems will need to be filtered by user_id as well in order to be scalable.  Will require a change in the model.
-        #!!!# Future version should only show public scoring_systems/schedules (defaults provided by BE) and the scoring systems created by users.
         scoring_system_id = form.scoring_system_id.data
         schedule_id = form.schedule_id.data
 
@@ -265,10 +353,11 @@ def add_user_goal():
         new_user_goal = User_Goal(
                             active = active, 
                             user_id = user_id, 
-                            persona_id = persona_id, 
-                            goal_id = goal_id, 
+                            user_persona_id = persona_id, 
                             scoring_system_id = scoring_system_id, 
-                            schedule_id = schedule_id)
+                            schedule_id = schedule_id,
+                            goal_id = goal_id, 
+                            description_private = form.description.data)
 
         db.session.add(new_user_goal)
 
@@ -278,5 +367,6 @@ def add_user_goal():
             flash("Error: Unable to create new user goal", "danger")
             print(e)
             db.session.rollback()
+            return redirect(url_for("plan_bp.get_new_goal"))
 
     return redirect(url_for("plan_bp.get_plan_home"))
