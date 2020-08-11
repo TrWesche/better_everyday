@@ -20,14 +20,19 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-12 col-lg-6 mt-4">
-                        <h5>Activity</h5>
-                        <p>Chart of Activity</p>
-                        <br>
-                        <p>Over the Last 7 Days</p>
+                    <div class="col-12 col-lg-6 col-xl-4 mt-4 mx-1">
+                        <h5>Activity History (7 days)</h5>
+                        <div class="gviz_user_scores_g" id="gviz_user_scoresg{{ goal.User_Goal.id }}" data-goal_id="{{ goal.User_Goal.id }}" data-qty_days="7"></div>
                     </div>
                     
-                    <div class="col-12 col-md-6 col-lg-3 mt-4">
+                    {% if goal.User_Goal.scoring_system_id %}
+                    <div class="col-12 col-lg-6 col-xl-4 mt-4 mx-1">
+                        <h5>Scoring System</h5>
+                        <div class="gviz_scoring_sys" id="gviz_scoring_sysg{{ goal.User_Goal.id }}" data-sys="{{ goal.User_Goal.scoring_system_id }}" data-title="Scoring System"></div>
+                    </div>
+                    {% endif %}
+
+                    <div class="col-12 col-lg-6 col-xl-3 mt-4 mx-1">
                         <h5>Linked Personas</h5>
                         {% if goal.persona_id %}
                         
@@ -46,6 +51,9 @@
                         <br>
                         <p>Linked to this Goal</p>
                     </div> -->
+
+
+
 
                 </div>
 

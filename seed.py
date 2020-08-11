@@ -13,9 +13,11 @@ from application.plan.models.model_user_goal import User_Goal
 
 from application.tracking.models.model_scoring_system import Scoring_System
 from application.tracking.models.model_reminder_schedule import Reminder_Schedule
+from application.tracking.models.model_scoring_system_params import Scoring_System_Params
 from application.tracking.models.model_goal_score import Goal_Score
 from application.tracking.models.model_habit_score import Habit_Score
-from application.tracking.models.model_scoring_system_params import Scoring_System_Params
+
+from datetime import datetime, timedelta
 
 os.environ['DATABASE_URL'] = "postgres:///better-everyday-test-v2"
 
@@ -551,3 +553,326 @@ with app.app_context():
     db.session.add_all([u1_h1, u1_h2, u1_h3, u2_h1, u2_h2, u2_h3])
     db.session.commit()
 
+
+#  1 week of history
+    score1_u1_h1 = Habit_Score(
+        id = 1,
+        date = "2020-08-03 20:00:00-06",
+        score = 50.0,
+        habit_id = 1
+    )
+
+    score2_u1_h1 = Habit_Score(
+        id = 2,
+        date = "2020-08-02 20:00:00-06",
+        score = 60.0,
+        habit_id = 1
+    )
+
+    score3_u1_h1 = Habit_Score(
+        id = 3,
+        date = "2020-08-01 20:00:00-06",
+        score = 80.0,
+        habit_id = 1
+    )
+
+    score4_u1_h1 = Habit_Score(
+        id = 4,
+        date = "2020-07-31 20:00:00-06",
+        score = 65.0,
+        habit_id = 1
+    )
+
+    score5_u1_h1 = Habit_Score(
+        id = 5,
+        date = "2020-07-30 20:00:00-06",
+        score = 45.0,
+        habit_id = 1
+    )
+
+    score6_u1_h1 = Habit_Score(
+        id = 6,
+        date = "2020-07-29 20:00:00-06",
+        score = 0.0,
+        habit_id = 1
+    )
+
+    score7_u1_h1 = Habit_Score(
+        id = 7,
+        date = "2020-07-28 20:00:00-06",
+        score = 90.0,
+        habit_id = 1
+    )
+
+    db.session.add_all([score1_u1_h1, score2_u1_h1, score3_u1_h1, score4_u1_h1, score5_u1_h1, score6_u1_h1, score7_u1_h1])
+
+# 3 days of history
+    score1_u1_h2 = Habit_Score(
+        id = 8,
+        date = "2020-08-03 20:00:00-06",
+        score = 70,
+        habit_id = 2
+    )
+
+    score2_u1_h2 = Habit_Score(
+        id = 9,
+        date = "2020-08-02 20:00:00-06",
+        score = 80.0,
+        habit_id = 2
+    )
+
+    score3_u1_h2 = Habit_Score(
+        id = 10,
+        date = "2020-08-01 20:00:00-06",
+        score = 90.0,
+        habit_id = 2
+    )
+
+    db.session.add_all([score1_u1_h2, score2_u1_h2, score3_u1_h2])
+
+# No History for h3
+    # score1_u1_h3
+
+# 3 days of history
+    score1_u2_h1 = Habit_Score(
+        id = 11,
+        date = "2020-08-03 20:00:00-06",
+        score = 70,
+        habit_id = 4
+    )
+
+    score2_u2_h1 = Habit_Score(
+        id = 12,
+        date = "2020-08-02 20:00:00-06",
+        score = 95,
+        habit_id = 4
+    )
+
+    score3_u2_h1 = Habit_Score(
+        id = 13,
+        date = "2020-08-01 20:00:00-06",
+        score = 100,
+        habit_id = 4
+    )
+
+    db.session.add_all([score1_u2_h1, score2_u2_h1, score3_u2_h1])
+
+# No History for h2
+    # score1_u2_h2
+
+# Full week of history
+    score1_u2_h3 = Habit_Score(
+        id = 14,
+        date = "2020-08-02 20:00:00-06",
+        score = 100,
+        habit_id = 6
+    )
+
+    score2_u2_h3 = Habit_Score(
+        id = 15,
+        date = "2020-08-01 20:00:00-06",
+        score = 111,
+        habit_id = 6
+    )
+
+    score3_u2_h3 = Habit_Score(
+        id = 16,
+        date = "2020-07-31 20:00:00-06",
+        score = 95,
+        habit_id = 6
+    )
+
+    score4_u2_h3 = Habit_Score(
+        id = 17,
+        date = "2020-07-30 20:00:00-06",
+        score = 105,
+        habit_id = 6
+    )
+
+    score5_u2_h3 = Habit_Score(
+        id = 18,
+        date = "2020-07-29 20:00:00-06",
+        score = 100,
+        habit_id = 6
+    )
+
+    score6_u2_h3 = Habit_Score(
+        id = 19,
+        date = "2020-07-28 20:00:00-06",
+        score = 70,
+        habit_id = 6
+    )
+
+    score7_u2_h3 = Habit_Score(
+        id = 20,
+        date = "2020-07-27 20:00:00-06",
+        score = 55,
+        habit_id = 6
+    )
+
+    db.session.add_all([score1_u2_h3, score2_u2_h3, score3_u2_h3, score4_u2_h3, score5_u2_h3, score6_u2_h3, score7_u2_h3])
+    db.session.commit()
+
+
+
+#  GOALS
+
+
+#  1 week of history
+    score1_u1_g1 = Goal_Score(
+        id = 1,
+        date = "2020-08-03 20:00:00-06",
+        score = 50.0,
+        goal_id = 1
+    )
+
+    score2_u1_g1 = Goal_Score(
+        id = 2,
+        date = "2020-08-02 20:00:00-06",
+        score = 60.0,
+        goal_id = 1
+    )
+
+    score3_u1_g1 = Goal_Score(
+        id = 3,
+        date = "2020-08-01 20:00:00-06",
+        score = 80.0,
+        goal_id = 1
+    )
+
+    score4_u1_g1 = Goal_Score(
+        id = 4,
+        date = "2020-07-31 20:00:00-06",
+        score = 65.0,
+        goal_id = 1
+    )
+
+    score5_u1_g1 = Goal_Score(
+        id = 5,
+        date = "2020-07-30 20:00:00-06",
+        score = 45.0,
+        goal_id = 1
+    )
+
+    score6_u1_g1 = Goal_Score(
+        id = 6,
+        date = "2020-07-29 20:00:00-06",
+        score = 0.0,
+        goal_id = 1
+    )
+
+    score7_u1_g1 = Goal_Score(
+        id = 7,
+        date = "2020-07-28 20:00:00-06",
+        score = 90.0,
+        goal_id = 1
+    )
+
+    db.session.add_all([score1_u1_g1, score2_u1_g1, score3_u1_g1, score4_u1_g1, score5_u1_g1, score6_u1_g1, score7_u1_g1])
+
+# 3 days of history
+    score1_u1_g2 = Goal_Score(
+        id = 8,
+        date = "2020-08-03 20:00:00-06",
+        score = 40,
+        goal_id = 2
+    )
+
+    score2_u1_g2 = Goal_Score(
+        id = 9,
+        date = "2020-08-02 20:00:00-06",
+        score = 70.0,
+        goal_id = 2
+    )
+
+    score3_u1_g2 = Goal_Score(
+        id = 10,
+        date = "2020-08-01 20:00:00-06",
+        score = 90.0,
+        goal_id = 2
+    )
+
+    db.session.add_all([score1_u1_g2, score2_u1_g2, score3_u1_g2])
+
+# No History for g3
+    # score1_u1_g3
+
+# 3 days of history
+    score1_u2_g1 = Goal_Score(
+        id = 11,
+        date = "2020-08-03 20:00:00-06",
+        score = 70,
+        goal_id = 4
+    )
+
+    score2_u2_g1 = Goal_Score(
+        id = 12,
+        date = "2020-08-02 20:00:00-06",
+        score = 95,
+        goal_id = 4
+    )
+
+    score3_u2_g1 = Goal_Score(
+        id = 13,
+        date = "2020-08-01 20:00:00-06",
+        score = 45,
+        goal_id = 4
+    )
+
+    db.session.add_all([score1_u2_g1, score2_u2_h1, score3_u2_g1])
+
+# No History for g2
+    # score1_u2_g2
+
+# Full week of history
+    score1_u2_g3 = Goal_Score(
+        id = 14,
+        date = "2020-08-02 20:00:00-06",
+        score = 55,
+        goal_id = 6
+    )
+
+    score2_u2_g3 = Goal_Score(
+        id = 15,
+        date = "2020-08-01 20:00:00-06",
+        score = 75,
+        goal_id = 6
+    )
+
+    score3_u2_g3 = Goal_Score(
+        id = 16,
+        date = "2020-07-31 20:00:00-06",
+        score = 95,
+        goal_id = 6
+    )
+
+    score4_u2_g3 = Goal_Score(
+        id = 17,
+        date = "2020-07-30 20:00:00-06",
+        score = 105,
+        goal_id = 6
+    )
+
+    score5_u2_g3 = Goal_Score(
+        id = 18,
+        date = "2020-07-29 20:00:00-06",
+        score = 100,
+        goal_id = 6
+    )
+
+    score6_u2_g3 = Goal_Score(
+        id = 19,
+        date = "2020-07-28 20:00:00-06",
+        score = 35,
+        goal_id = 6
+    )
+
+    score7_u2_g3 = Goal_Score(
+        id = 20,
+        date = "2020-07-27 20:00:00-06",
+        score = 55,
+        goal_id = 6
+    )
+
+    db.session.add_all([score1_u2_g3, score2_u2_g3, score3_u2_g3, score4_u2_g3, score5_u2_g3, score6_u2_g3, score7_u2_g3])
+    db.session.commit()

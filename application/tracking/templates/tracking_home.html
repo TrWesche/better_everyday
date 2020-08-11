@@ -11,14 +11,15 @@
     {% endif %}
 </div>
 
-<div class="gviz_stepchart" id="gviz_stepchart_div1" data-sys="1" data-title="Chart 1"></div>
+{% for system in scoring_systems %}
+<div class="gviz_scoring_sys" id="gviz_scoring_sys{{ system.id }}" data-sys="{{ system.id }}" data-title="{{ system.title_en }}"></div>
+{% endfor %}
 
-<div class="gviz_stepchart" id="gviz_stepchart_div2" data-sys="2" data-title="Chart 2"></div>
+<div class="gviz_user_scores" id="gviz_user_scores1" data-habit_id="1" data-qty_days="7"></div>
 
 {% endblock %}
 
 {% block scripts %}
     <script src="https://unpkg.com/axios/dist/axios.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="module" src="static/render_stepcharts.js"></script>
 {% endblock %}

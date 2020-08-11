@@ -2,6 +2,10 @@
 
 {% block page_title %}Improvement Plan{% endblock %}
 
+{% block style_sheets %}
+<link rel="stylesheet" href="../plan/static/styles_plan.css">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <h1 class="mt-4 display-3">My Development Plan</h1>
@@ -11,7 +15,6 @@
             <a href="{{ url_for('plan_bp.get_new_persona') }}" class="btn btn-info btn-lg" role="button" aria-disabled="true">Create New</a>   
         </div>
     </div>
-
 
     <div class="row mt-3">
         <div class="col">
@@ -81,5 +84,7 @@
 {% block scripts %}
     <script src="https://unpkg.com/axios/dist/axios.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script type="module" src="static/render_stepcharts.js"></script>
+    <script type="module" src="static/render_scoring_sys.js"></script>
+    <script type="module" src="static/render_user_habit_scores.js"></script>
+    <script type="module" src="static/render_user_goal_scores.js"></script>
 {% endblock %}

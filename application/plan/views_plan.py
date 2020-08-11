@@ -88,21 +88,25 @@ def get_plan_home():
         user_habits = User_Habit.query\
             .join(Habit, User_Habit.habit_id == Habit.id)\
             .add_columns(User_Habit.user_id, Habit.title_en, Habit.description_public)\
-            .join(User_Persona, User_Persona.id == User_Habit.user_persona_id)\
+            .outerjoin(User_Persona, User_Persona.id == User_Habit.user_persona_id)\
             .add_columns(User_Persona.id.label("persona_id"))\
-            .join(Persona, User_Persona.id == Persona.id)\
+            .outerjoin(Persona, User_Persona.id == Persona.id)\
             .add_columns(Persona.title_en.label("persona_title"))\
             .filter(User_Habit.user_id == g.user.id).all()
 
         user_goals = User_Goal.query\
             .join(Goal, User_Goal.goal_id == Goal.id)\
             .add_columns(User_Goal.user_id, Goal.title_en, Goal.description_public)\
-            .join(User_Persona, User_Persona.id == User_Goal.user_persona_id)\
+            .outerjoin(User_Persona, User_Persona.id == User_Goal.user_persona_id)\
             .add_columns(User_Persona.id.label("persona_id"))\
-            .join(Persona, User_Persona.id == Persona.id)\
+            .outerjoin(Persona, User_Persona.id == Persona.id)\
             .add_columns(Persona.title_en.label("persona_title"))\
             .filter(User_Goal.user_id == g.user.id).all()
 
+        print(user_personas)
+        print(g.user.id)
+        print(user_habits)
+        print(user_goals)
 
         persona_render_list = []
         if user_personas:

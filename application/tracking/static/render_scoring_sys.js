@@ -6,7 +6,7 @@ google.charts.load('current', {'packages':['corechart']});
 google.charts.setOnLoadCallback(drawChart)
 
 function drawChart() {
-    const stepchart_objs = $(".gviz_stepchart")
+    const stepchart_objs = $(".gviz_scoring_sys")
 
     for (let index = 0; index < stepchart_objs.length; index++) {
         const element = stepchart_objs[index];

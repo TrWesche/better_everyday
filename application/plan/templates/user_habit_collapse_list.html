@@ -20,14 +20,19 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-12 col-lg-6 mt-4">
-                        <h5>Activity</h5>
-                        <p>Chart of Activity</p>
-                        <br>
-                        <p>Over the Last 7 Days</p>
+                    {% if habit.User_Habit.scoring_system_id %}
+                    <div class="col-12 col-lg-6 col-xl-4 mt-4 mx-1">
+                        <h5>Activity History (7 days)</h5>
+                        <div class="gviz_user_scores_h" id="gviz_user_scoresh{{ habit.User_Habit.id }}" data-habit_id="{{ habit.User_Habit.id }}" data-qty_days="7"></div>
                     </div>
                     
-                    <div class="col-12 col-md-6 col-lg-3 mt-4">
+                    <div class="col-12 col-lg-6 col-xl-4 mt-4 mx-1">
+                        <h5>Scoring System</h5>
+                        <div class="gviz_scoring_sys" id="gviz_scoring_sysh{{ habit.User_Habit.id }}" data-sys="{{ habit.User_Habit.scoring_system_id }}" data-title="Scoring System"></div>
+                    </div>
+                    {% endif %}
+
+                    <div class="col-12 col-lg-6 col-xl-3 mt-4 mx-1">
                         <h5>Linked Personas</h5>
                         {% if habit.persona_id %}
                         
@@ -40,13 +45,7 @@
                         {% endif %}
                     </div>
                     
-                    {% if habit.User_Habit.scoring_system_id %}
-                    <div class="col-12 col-md-6 col-lg-3 mt-4 gviz_stepchart" id="gviz_stepchart_{{ habit.User_Habit.scoring_system_id }}" data-sys="{{ habit.User_Habit.scoring_system_id }}" data-title="Scoring System">
-                        <h5>Scoring System</h5>
-                    </div>
-                    {% endif %}
-
-                    <!-- 
+<!-- 
                     <div class="col-12 col-md-6 col-lg-3 mt-4">
                         <h5>Linked Goals</h5>
                         <p>List of Goals</p>
@@ -54,6 +53,10 @@
                         <p>Linked to this Habit</p>
                     </div> -->
 
+
+
+
+                    
                 </div>
 
                 <div class="row mt-4 justify-content-center">

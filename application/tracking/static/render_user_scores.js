@@ -1,4 +1,4 @@
-const dataSrcRoot = `${window.location.origin}/tracking/scoring_sys` //"http://localhost:5000/tracking/scoring_sys"
+const dataSrcRoot = `${window.location.origin}/tracking/user_scores` //"http://localhost:5000/tracking/scoring_sys"
 
 // Load the Visualization API and the corechart package.
 google.charts.load('current', {'packages':['corechart']});
@@ -6,26 +6,23 @@ google.charts.load('current', {'packages':['corechart']});
 google.charts.setOnLoadCallback(drawChart)
 
 function drawChart() {
-    const stepchart_objs = $(".gviz_stepchart")
+    const stepchart_objs = $(".gviz_user_scores")
 
     for (let index = 0; index < stepchart_objs.length; index++) {
         const element = stepchart_objs[index];
 
-        drawStepChart(element.dataset.sys, element.id, element.dataset.title)
+        drawStepChart(element.dataset.habit_id, element.dataset.qty_days, element.id, element.dataset.title)
     }
 }
 
-async function getChartData(system) {
-    const res = await axios.get(`${dataSrcRoot}`, { params: {system} });
+async function getChartData(habit_id, qty_days) {
+    const res = await axios.get(`${dataSrcRoot}`, { params: {habit_id, qty_days} });
     return res;
 }
 
-//  TODO: The stepchart display is not working currently.
-async function drawStepChart(system, target_div, chart_title) {
-    const jsonData = await getChartData(system)
+async function drawStepChart(habit_id, qty_days, target_div, chart_title) {
+    const jsonData = await getChartData(habit_id, qty_days)
     
-    console.log(jsonData)
-    console.log(target_div)
     // Create our data table out of JSON data loaded from server.
     var data = new google.visualization.DataTable(jsonData.data);
 
@@ -34,8 +31,7 @@ async function drawStepChart(system, target_div, chart_title) {
 
     var options = {
         title: chart_title,
-        hAxis: {title: 'Time Input'},
-        vAxis: {title: 'Score Output'}
+        vAxis: {title: 'Score'}
     };
 
     chart.draw(data, options);
