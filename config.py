@@ -43,4 +43,4 @@ class TestConfig(Config):
     SQLALCHEMY_ECHO = True
 
     # Debug Toolbar
-    DEBUG_TB_INTERCEPT_REDIRECTS = True
+    DEBUG_TB_INTERCEPT_REDIRECTS = False

@@ -103,10 +103,10 @@ def get_plan_home():
             .add_columns(Persona.title_en.label("persona_title"))\
             .filter(User_Goal.user_id == g.user.id).all()
 
-        print(user_personas)
-        print(g.user.id)
-        print(user_habits)
-        print(user_goals)
+        # print(user_personas)
+        # print(g.user.id)
+        # print(user_habits)
+        # print(user_goals)
 
         persona_render_list = []
         if user_personas:

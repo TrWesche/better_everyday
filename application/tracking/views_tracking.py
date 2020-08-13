@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, flash, request, session, g, jsonify
+from flask import Blueprint, render_template, redirect, flash, request, session, g, jsonify, url_for
 from flask import current_app as app
 from sqlalchemy import exc, and_
 from .models.model_habit_score import Habit_Score
@@ -9,6 +9,11 @@ from .models.model_reminder_schedule import Reminder_Schedule
 
 from ..plan.models.model_user_habit import User_Habit
 from ..plan.models.model_user_goal import User_Goal
+
+from .forms.form_scoring_system import ScoringSystemForm
+from .forms.form_scoring_param import ScoringSystemParamForm
+from .forms.form_goal_score import GoalScoreForm
+from .forms.form_habit_score import HabitScoreForm
 
 from datetime import datetime, timedelta
 from application import db
@@ -36,6 +41,106 @@ def get_tracking_home():
 
     return render_template("tracking_home.html", scoring_systems = scoring_systems)
 
+
+@tracking_bp.route("/scoring_sys/new", methods=["GET"])
+def get_new_scoring_sys():
+    if g.user:
+        form = ScoringSystemForm(request.form)
+
+        return render_template("scoring_system_new.html", form = form)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
+
+@tracking_bp.route("/scoring_sys/new", methods=["POST"])
+def add_new_scoring_sys():
+    if g.user:
+        form = ScoringSystemForm(request.form)
+
+        if form.validate_on_submit():
+            scoring_sys = Scoring_System(
+                user_id = g.user.id,
+                title_en = form.title.data,
+                description = form.description.data,
+                public = False
+            )
+
+            # Try adding scoring system to database
+            try:
+                db.session.add(scoring_sys)
+                db.session.commit()
+                return redirect(url_for("tracking_bp.get_new_scoring_params", scoring_sys_id = scoring_sys.id))
+            except Exception as e:
+                flash("An error occured, if this problem persists please contact our user assistance dept", "danger")
+                print(e)
+                db.session.rollback()
+
+        else:
+            return render_template(url_for("tracking_bp.get_new_scoring_sys"), form=form)
+
+
+@tracking_bp.route("/scoring_sys/<scoring_sys_id>/params", methods=["GET"])
+def get_new_scoring_params(scoring_sys_id):
+    if g.user:
+
+        scoring_system = Scoring_System.query.filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys_id)).first()
+
+        parameters = Scoring_System.query\
+                .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
+                .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en)\
+                .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys_id))\
+                .order_by(Scoring_System_Params.score_bp)\
+                .all()
+
+        form = ScoringSystemParamForm(request.form)
+
+        return render_template("scoring_system_params.html", form = form, scoring_system = scoring_system, parameters = parameters)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
+
+
+
+@tracking_bp.route("/scoring_sys/<scoring_sys_id>/params", methods=["POST"])
+def add_new_scoring_param(scoring_sys_id):
+    if g.user:
+        form = ScoringSystemParamForm(request.form)
+
+        scoring_system = Scoring_System.query.filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys_id)).first()
+
+        parameters = Scoring_System_Params.query.filter(Scoring_System_Params.scoring_system_id == scoring_sys_id)
+
+        breakpoints = [param.score_bp for param in parameters]
+
+        if breakpoints:
+            score_bp = max(breakpoints) + 1
+        else:
+            score_bp = 1
+
+        if form.validate_on_submit():
+            param = Scoring_System_Params(
+                scoring_system_id = scoring_sys_id,
+                score_bp = score_bp,
+                score_input = form.score_input.data,
+                score_output = form.score_output.data,
+                name_en = form.name_en.data
+            )
+
+            # Try adding scoring system to database
+            try:
+                db.session.add(param)
+                db.session.commit()    
+            except Exception as e:
+                flash("An error occured, if this problem persists please contact our user assistance dept", "danger")
+                print(e)
+                db.session.rollback()
+
+            return redirect(url_for("tracking_bp.get_new_scoring_params", scoring_sys_id = scoring_sys_id))
+
+        else:
+            return render_template("scoring_system_params.html", form = form, scoring_system = scoring_system, parameters = parameters)
 
 
 @tracking_bp.route("/scoring_sys")

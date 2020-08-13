@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block page_title %}System Parameters{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h1 class="mt-4 display-3">{{ scoring_system.title_en }} Parameters</h1>
+        </div>
+    </div>
+
+    {% if parameters %}
+    <div class="row mt-5">
+        <div class="col">
+            <h3>Current Parameters</h3>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Score Input</th>
+                        <th scope="col">Score Output</th>
+                        <th scope="col">Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for param in parameters %}
+                    <tr>
+                        <td>{{ param.score_input }}</td>
+                        <td>{{ param.score_output }}</td>
+                        <td>{{ param.name_en }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row mt-5">
+        <div class="col">
+            <h3>Add Parameters:</h3>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col">
+            <form action="{{ url_for('tracking_bp.add_new_scoring_param', scoring_sys_id = scoring_system.id) }}" method="post">
+                {{ form.hidden_tag() }}
+
+                {% for field in form if field.widget.input_type != 'hidden'%}
+
+                <div class="form-group">
+                    {{ field.label(class_="font-weight-bolder") }}
+                    {{ field(class_="form-control")}}
+                    {% for error in field.errors %}
+                    <small class="form-text text-danger">
+                    {{error}}
+                    </small>
+                    {% endfor %}
+                </div>
+
+                {% endfor %}
+
+                <a href="/" class="btn btn-secondary my-2">Cancel</a>
+                <button type="submit" class="btn btn-primary my-2">Submit</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
