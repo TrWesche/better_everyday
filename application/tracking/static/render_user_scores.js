@@ -31,7 +31,8 @@ async function drawStepChart(habit_id, qty_days, target_div, chart_title) {
 
     var options = {
         title: chart_title,
-        vAxis: {title: 'Score'}
+        vAxis: {title: 'Score'},
+        hAxis: {textPosition: 'none'}
     };
 
     chart.draw(data, options);

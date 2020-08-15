@@ -40,7 +40,7 @@ class TestConfig(Config):
     # Database
     SQLALCHEMY_RECORD_QUERIES = True
     SQLALCHEMY_DATABASE_URI = environ.get("SQLALCHEMY_DATABASE_URI_TEST")
-    SQLALCHEMY_ECHO = True
+    SQLALCHEMY_ECHO = False
 
     # Debug Toolbar
     DEBUG_TB_INTERCEPT_REDIRECTS = False

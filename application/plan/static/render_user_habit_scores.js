@@ -31,8 +31,11 @@ async function drawStepChart(habit_id, qty_days, target_div) {
 
     var options = {
         hAxis: {
-            showTextEvery: 2,
-            format: 'M/d'
+            showTextEvery: 1,
+            format: 'M/d',
+            minorGridlines: {
+                count: 0
+            }
         },
         vAxis: {
             title: 'Score',

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block page_title %}New Goal Entry{% endblock %}
+
+{% block style_sheets %}
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h1 class="mt-4 display-3">New Entry {{ user_goal.title_en }}</h1>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col">
+            <p>Fill out the form below to add a new entry to your progress log:</p>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col">
+            <form action="{{ url_for('tracking_bp.add_new_goal_score', goal_id = user_goal.User_Goal.goal_id ) }}" method="post">
+                {{ form.hidden_tag() }}
+
+                {% for field in form if field.widget.input_type != 'hidden'%}
+                
+                {% if field.type == "DateField" %}
+                <div class="form-group">
+                    {{ field.label(class_="font-weight-bolder") }}
+                    {{ field(class_="datepicker form-control")}}
+                    {% for error in field.errors %}
+                    <small class="form-text text-danger">
+                    {{error}}
+                    </small>
+                    {% endfor %}
+                </div>
+                
+                {% else %}
+
+                <div class="form-group">
+                    {{ field.label(class_="font-weight-bolder") }}
+                    {{ field(class_="form-control")}}
+                    {% for error in field.errors %}
+                    <small class="form-text text-danger">
+                    {{error}}
+                    </small>
+                    {% endfor %}
+                </div>
+
+                {% endif %}
+
+                {% endfor %}
+
+                <a href="/" class="btn btn-secondary my-2">Cancel</a>
+                <button type="submit" class="btn btn-primary my-2">Submit</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- <script src="https://code.jquery.com/jquery-1.12.4.js"></script> -->
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script type="text/javascript" src="/tracking/static/render_datetime_picker.js"></script>
+{% endblock %}

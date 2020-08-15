@@ -4,7 +4,7 @@ from wtforms.validators import DataRequired, Length
 
 
 class GoalScoreForm(FlaskForm):
-    """Form for creating & updating user goals."""
+    """Form for creating & updating user goal scores."""
 
-    date = FloatField('Date', validators=[DataRequired()])
+    date = DateField('Date', format='%m/%d/%Y', validators=[DataRequired()])
     score = FloatField('Score', validators=[DataRequired()])

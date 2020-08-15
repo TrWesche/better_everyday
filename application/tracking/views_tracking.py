@@ -9,6 +9,8 @@ from .models.model_reminder_schedule import Reminder_Schedule
 
 from ..plan.models.model_user_habit import User_Habit
 from ..plan.models.model_user_goal import User_Goal
+from ..plan.models.model_goal import Goal
+from ..plan.models.model_habit import Habit
 
 from .forms.form_scoring_system import ScoringSystemForm
 from .forms.form_scoring_param import ScoringSystemParamForm
@@ -100,7 +102,6 @@ def get_new_scoring_params(scoring_sys_id):
     else:
         flash("You must be logged in to access that page.", "warning")
         return redirect(url_for("home_bp.homepage"))
-
 
 
 @tracking_bp.route("/scoring_sys/<scoring_sys_id>/params", methods=["POST"])
@@ -197,9 +198,9 @@ def get_user_habit_scores():
         qty_days = int(request.args.get('qty_days'))
         
 
-        # filter_after = datetime.today() - timedelta(days = qty_days)
+        filter_after = datetime.today() - timedelta(days = qty_days)
 
-        filter_after = datetime(2020, 8, 3, 13, 39, 13, 288470) - timedelta(days = qty_days)
+        # filter_after = datetime(2020, 8, 3, 13, 39, 13, 288470) - timedelta(days = qty_days)
 
         score_results = User_Habit.query\
             .join(Habit_Score, User_Habit.id == Habit_Score.habit_id)\
@@ -277,9 +278,9 @@ def get_user_goal_scores():
         qty_days = int(request.args.get('qty_days'))
         
 
-        # filter_after = datetime.today() - timedelta(days = qty_days)
+        filter_after = datetime.today() - timedelta(days = qty_days)
 
-        filter_after = datetime(2020, 8, 3, 13, 39, 13, 288470) - timedelta(days = qty_days)
+        # filter_after = datetime(2020, 8, 3, 13, 39, 13, 288470) - timedelta(days = qty_days)
 
         score_results = User_Goal.query\
             .join(Goal_Score, User_Goal.id == Goal_Score.goal_id)\
@@ -347,3 +348,136 @@ def get_user_goal_scores():
     else:
         jsonResponse = {'error': 'User must be authenticated to view that page.'}
         return jsonResponse
+
+
+@tracking_bp.route("/goal_scores/<goal_id>/new", methods=["GET"])
+def get_new_goal_score(goal_id):
+    if g.user:
+        form = GoalScoreForm()
+
+        user_goal = User_Goal.query\
+            .join(Goal, Goal.id == User_Goal.goal_id)\
+            .add_columns(Goal.title_en, Goal.description_public)\
+            .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id))\
+            .first()
+        
+        form.date = datetime.today()
+
+        return render_template("goal_score_new.html", form = form, user_goal = user_goal)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
+
+
+@tracking_bp.route("/goal_scores/<int:goal_id>/new", methods=["POST"])
+def add_new_goal_score(goal_id):
+    if g.user:
+        form = GoalScoreForm(obj=request.form)
+
+        user_goal = User_Goal.query\
+            .join(Goal, Goal.id == User_Goal.goal_id)\
+            .add_columns(Goal.title_en, Goal.description_public)\
+            .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id))\
+            .first()
+
+        if user_goal and form.validate_on_submit():
+
+            date_check = Goal_Score.query\
+                .join(User_Goal, User_Goal.id == Goal_Score.goal_id)\
+                .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id, Goal_Score.date == form.date.data))\
+                .first()
+
+            if not date_check:
+
+                score = Goal_Score(
+                    date = form.date.data,
+                    score = form.score.data,
+                    goal_id = goal_id
+                )
+
+                # Try adding goal score to database
+                try:
+                    db.session.add(score)
+                    db.session.commit()    
+                except Exception as e:
+                    flash("Oops... We were unable to add a new entry to your progress log.  We'll look into it!", "danger")
+                    print(e)
+                    db.session.rollback()
+            
+            else:
+                flash("An entry already exists for this date, please modify existing entry.", "info")
+                db.session.rollback()
+
+
+            return redirect(url_for("tracking_bp.get_new_goal_score", goal_id = goal_id))
+
+        else:
+            return render_template("goal_score_new.html", form = form, user_goal = user_goal)
+
+
+@tracking_bp.route("/habit_scores/<habit_id>/new", methods=["GET"])
+def get_new_habit_score(habit_id):
+    if g.user:
+        form = HabitScoreForm()
+
+        user_habit = User_Habit.query\
+            .join(Habit, Habit.id == User_Habit.habit_id)\
+            .add_columns(Habit.title_en, Habit.description_public)\
+            .filter(and_(User_Habit.user_id == g.user.id, User_Habit.id == habit_id))\
+            .first()
+        
+        form.date = datetime.today()
+
+        return render_template("habit_score_new.html", form = form, user_habit = user_habit)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
+
+
+@tracking_bp.route("/habit_scores/<int:habit_id>/new", methods=["POST"])
+def add_new_habit_score(habit_id):
+    if g.user:
+        form = HabitScoreForm(obj=request.form)
+
+        user_habit = User_Habit.query\
+            .join(Habit, Habit.id == User_Habit.habit_id)\
+            .add_columns(Habit.title_en, Habit.description_public)\
+            .filter(and_(User_Habit.user_id == g.user.id, User_Habit.id == habit_id))\
+            .first()
+
+        if user_habit and form.validate_on_submit():
+
+            date_check = Habit_Score.query\
+                .join(User_Habit, User_Habit.id == Habit_Score.habit_id)\
+                .filter(and_(User_Habit.user_id == g.user.id, User_Habit.id == habit_id, Habit_Score.date == form.date.data))\
+                .first()
+
+            if not date_check:
+
+                score = Habit_Score(
+                    date = form.date.data,
+                    score = form.score.data,
+                    habit_id = habit_id
+                )
+
+                # Try adding habit score to database
+                try:
+                    db.session.add(score)
+                    db.session.commit()    
+                except Exception as e:
+                    flash("Oops... We were unable to add a new entry to your progress log.  We'll look into it!", "danger")
+                    print(e)
+                    db.session.rollback()
+            
+            else:
+                flash("An entry already exists for this date, please modify existing entry.", "info")
+                db.session.rollback()
+
+
+            return redirect(url_for("tracking_bp.get_new_habit_score", habit_id = habit_id))
+
+
+        else:
+            return render_template("habit_score_new.html", form = form, user_habit = user_habit)
