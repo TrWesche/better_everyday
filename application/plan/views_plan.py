@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, flash, request, session, g, url_for
 from flask import current_app as app
-from sqlalchemy import exc, or_
+from sqlalchemy import exc, or_, and_
 
 # Import Models
 from .models.model_persona import Persona
@@ -103,11 +103,6 @@ def get_plan_home():
             .add_columns(Persona.title_en.label("persona_title"))\
             .filter(User_Goal.user_id == g.user.id).all()
 
-        # print(user_personas)
-        # print(g.user.id)
-        # print(user_habits)
-        # print(user_goals)
-
         persona_render_list = []
         if user_personas:
             for persona in user_personas:
@@ -137,7 +132,7 @@ def get_plan_home():
         return redirect(url_for("home_bp.homepage"))
 
 
-@plan_bp.route("/new/persona", methods=["GET"])
+@plan_bp.route("/persona/new", methods=["GET"])
 def get_new_persona():
     if g.user:
 
@@ -151,67 +146,7 @@ def get_new_persona():
         return redirect(url_for("home_bp.homepage"))
 
 
-@plan_bp.route("/new/habit", methods=["GET"])
-def get_new_habit():
-    if g.user:
-        user_personas = User_Persona.query\
-            .join(Persona, User_Persona.persona_id == Persona.id)\
-            .add_columns(Persona.id, Persona.title_en)\
-            .filter(User_Persona.user_id == g.user.id).all()
-
-        persona_list = [(persona.id, persona.title_en) for persona in user_personas]
-
-        user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
-        scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
-
-        user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-        reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
-        
-
-        user_habit_form = UserHabitForm()
-        
-        user_habit_form.persona.choices = persona_list
-        user_habit_form.scoring_system_id.choices = scoring_system_list
-        user_habit_form.schedule_id.choices = reminder_schedule_list
-
-        return render_template("plan_new_habit.html",
-                user_habit_form=user_habit_form)
-
-    else:
-        flash("You must be logged in to access that page.", "warning")
-        return redirect(url_for("home_bp.homepage"))
-
-
-@plan_bp.route("/new/goal", methods=["GET"])
-def get_new_goal():
-    if g.user:
-        user_personas = User_Persona.query\
-            .join(Persona, User_Persona.persona_id == Persona.id)\
-            .add_columns(Persona.id, Persona.title_en)\
-            .filter(User_Persona.user_id == g.user.id).all()
-
-        persona_list = [(persona.id, persona.title_en) for persona in user_personas]
-
-        user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
-        scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
-
-        user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-        reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
-
-        user_goal_form = UserGoalForm()
-        user_goal_form.persona.choices = persona_list
-        user_goal_form.scoring_system_id.choices = scoring_system_list
-        user_goal_form.schedule_id.choices = reminder_schedule_list
-
-        return render_template("plan_new_goal.html",
-                user_goal_form=user_goal_form)
-
-    else:
-        flash("You must be logged in to access that page.", "warning")
-        return redirect(url_for("home_bp.homepage"))
-
-
-@plan_bp.route("/add_user_persona", methods=["POST"])
+@plan_bp.route("/persona/new", methods=["POST"])
 def add_user_persona():
     form = UserPersonaFrom(request.form)
 
@@ -247,6 +182,121 @@ def add_user_persona():
             return redirect(url_for("plan_bp.get_new_persona"))
 
     return redirect(url_for("plan_bp.get_plan_home"))
+
+
+
+@plan_bp.route("/persona/<int:persona_id>/edit", methods=["GET"])
+def get_edit_persona(persona_id):
+    if g.user:
+
+        target_persona = User_Persona.query\
+            .join(Persona, User_Persona.persona_id == Persona.id)\
+            .add_columns(User_Persona.user_id, Persona.title_en, Persona.description_public)\
+            .filter(and_(User_Persona.user_id == g.user.id, User_Persona.id == persona_id)).first()
+
+        if target_persona:
+            user_persona_form = UserPersonaFrom(
+                title = target_persona.title_en,
+                description = target_persona.User_Persona.description_private,
+                active = target_persona.User_Persona.active
+            )
+
+        return render_template("plan_new_persona.html",
+                user_persona_form=user_persona_form)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
+
+
+# @plan_bp.route("/persona/<int:persona_id>/edit", methods=["PATCH"])
+# def update_persona(persona_id):
+#     if g.user:
+
+#         form = UserPersonaFrom(request.form)
+
+#         target_persona = User_Persona.query\
+#             .filter(and_(User_Persona.user_id == g.user.id, User_Persona.id == persona_id)).first()
+
+#         if target_persona and form.validate_on_submit():
+
+
+#             user_persona_form = UserPersonaFrom(
+#                 title = target_persona.title_en,
+#                 description = target_persona.User_Persona.description_private,
+#                 active = target_persona.User_Persona.active
+#             )
+
+#         return render_template("plan_new_persona.html",
+#                 user_persona_form=user_persona_form)
+
+#     else:
+#         flash("You must be logged in to access that page.", "warning")
+#         return redirect(url_for("home_bp.homepage"))
+
+
+
+
+@plan_bp.route("/habit/new", methods=["GET"])
+def get_new_habit():
+    if g.user:
+        user_personas = User_Persona.query\
+            .join(Persona, User_Persona.persona_id == Persona.id)\
+            .add_columns(Persona.id, Persona.title_en)\
+            .filter(User_Persona.user_id == g.user.id).all()
+
+        persona_list = [(persona.id, persona.title_en) for persona in user_personas]
+
+        user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
+        scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
+
+        user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+        reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
+        
+
+        user_habit_form = UserHabitForm()
+        
+        user_habit_form.persona.choices = persona_list
+        user_habit_form.scoring_system_id.choices = scoring_system_list
+        user_habit_form.schedule_id.choices = reminder_schedule_list
+
+        return render_template("plan_new_habit.html",
+                user_habit_form=user_habit_form)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
+
+
+@plan_bp.route("/goal/new", methods=["GET"])
+def get_new_goal():
+    if g.user:
+        user_personas = User_Persona.query\
+            .join(Persona, User_Persona.persona_id == Persona.id)\
+            .add_columns(Persona.id, Persona.title_en)\
+            .filter(User_Persona.user_id == g.user.id).all()
+
+        persona_list = [(persona.id, persona.title_en) for persona in user_personas]
+
+        user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
+        scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
+
+        user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+        reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
+
+        user_goal_form = UserGoalForm()
+        user_goal_form.persona.choices = persona_list
+        user_goal_form.scoring_system_id.choices = scoring_system_list
+        user_goal_form.schedule_id.choices = reminder_schedule_list
+
+        return render_template("plan_new_goal.html",
+                user_goal_form=user_goal_form)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
+
+
 
 
 @plan_bp.route("/add_user_habit", methods=["POST"])

@@ -53,14 +53,12 @@
                         <p>Linked to this Habit</p>
                     </div> -->
 
-
-
-
                     
                 </div>
 
                 <div class="row mt-4 justify-content-center">
-                    <a href="#" class="btn btn-primary mx-2">Edit Habit</a>
+                    <a href="{{ url_for('tracking_bp.get_new_habit_score', habit_id = habit.User_Habit.id) }}" class="btn btn-primary mx-2">Track Progress</a>
+                    <a href="#" class="btn btn-info mx-2">Edit Habit</a>
                     <a href="#" class="btn btn-danger mx-2">Delete Habit</a>
                 </div>
 

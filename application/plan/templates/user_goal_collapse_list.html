@@ -58,7 +58,8 @@
                 </div>
 
                 <div class="row mt-4 justify-content-center">
-                    <a href="#" class="btn btn-primary mx-2">Edit Goal</a>
+                    <a href="{{ url_for('tracking_bp.get_new_goal_score', goal_id = goal.User_Goal.id) }}" class="btn btn-primary mx-2">Track Progress</a>
+                    <a href="#" class="btn btn-info mx-2">Edit Goal</a>
                     <a href="#" class="btn btn-danger mx-2">Delete Goal</a>
                 </div>
 
