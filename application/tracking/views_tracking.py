@@ -361,7 +361,7 @@ def get_new_goal_score(goal_id):
             .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id))\
             .first()
         
-        form.date = datetime.today()
+        form.date.data = datetime.today()
 
         return render_template("goal_score_new.html", form = form, user_goal = user_goal)
 
@@ -415,6 +415,10 @@ def add_new_goal_score(goal_id):
         else:
             return render_template("goal_score_new.html", form = form, user_goal = user_goal)
 
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
+
 
 @tracking_bp.route("/habit_scores/<habit_id>/new", methods=["GET"])
 def get_new_habit_score(habit_id):
@@ -427,7 +431,7 @@ def get_new_habit_score(habit_id):
             .filter(and_(User_Habit.user_id == g.user.id, User_Habit.id == habit_id))\
             .first()
         
-        form.date = datetime.today()
+        form.date.data = datetime.today()
 
         return render_template("habit_score_new.html", form = form, user_habit = user_habit)
 
@@ -478,6 +482,10 @@ def add_new_habit_score(habit_id):
 
             return redirect(url_for("tracking_bp.get_new_habit_score", habit_id = habit_id))
 
-
         else:
+
             return render_template("habit_score_new.html", form = form, user_habit = user_habit)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))

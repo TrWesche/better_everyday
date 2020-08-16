@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block page_title %}New Goal Entry{% endblock %}
+{% block page_title %}New Habit Entry{% endblock %}
 
 {% block style_sheets %}
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -22,7 +22,7 @@
 
     <div class="row mt-2">
         <div class="col">
-            <form action="{{ url_for('tracking_bp.add_new_habit_score', habit_id = user_habit.User_Habit.habit_id ) }}" method="post">
+            <form action="{{ url_for('tracking_bp.add_new_habit_score', habit_id = user_habit.User_Habit.id ) }}" method="post">
                 {{ form.hidden_tag() }}
 
                 {% for field in form if field.widget.input_type != 'hidden'%}

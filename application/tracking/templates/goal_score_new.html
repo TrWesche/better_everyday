@@ -22,7 +22,7 @@
 
     <div class="row mt-2">
         <div class="col">
-            <form action="{{ url_for('tracking_bp.add_new_goal_score', goal_id = user_goal.User_Goal.goal_id ) }}" method="post">
+            <form action="{{ url_for('tracking_bp.add_new_goal_score', goal_id = user_goal.User_Goal.id ) }}" method="post">
                 {{ form.hidden_tag() }}
 
                 {% for field in form if field.widget.input_type != 'hidden'%}
