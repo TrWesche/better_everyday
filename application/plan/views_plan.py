@@ -216,8 +216,6 @@ def get_edit_persona(persona_id):
 
 @plan_bp.route("/persona/<int:persona_id>/edit", methods=["POST"])
 def update_persona(persona_id):
-    print("Entered Edit:")
-
     if g.user:
 
         form = UserPersonaFrom(request.form)
@@ -225,18 +223,10 @@ def update_persona(persona_id):
         target_user_persona = User_Persona.query\
             .filter(and_(User_Persona.user_id == g.user.id, User_Persona.id == persona_id)).first()
 
-        print("User OK:")
-        print(target_user_persona)
-
-
         if target_user_persona and form.validate_on_submit():
-
-            print("Form OK:")
 
             # Check for Persona with that name in dictionary table
             target_persona = Persona.query.filter(Persona.title_en == form.title.data.lower()).first()
-
-            print(target_persona)
 
             # If does not exist create a new persona under target name
             if not target_persona:
@@ -272,7 +262,31 @@ def update_persona(persona_id):
         flash("You must be logged in to access that page.", "warning")
         return redirect(url_for("home_bp.homepage"))
 
+@plan_bp.route("/persona/<int:persona_id>/delete", methods=["POST"])
+def delete_persona(persona_id):
+    if g.user:
 
+        target_user_persona = User_Persona.query\
+            .filter(and_(User_Persona.user_id == g.user.id, User_Persona.persona_id == persona_id)).first()
+
+        if target_user_persona:
+            db.session.delete(target_user_persona)
+
+            try:
+                db.session.commit()
+            except Exception as e:
+                flash("Error: Unable to delete user persona", "danger")
+                print(e)
+                db.session.rollback()  
+        
+        else:
+            flash("You do not have appropriate permissions to delete that user persona.", "warning")    
+        
+        return redirect(url_for("plan_bp.get_plan_home"))
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
 
 
 @plan_bp.route("/habit/new", methods=["GET"])

@@ -22,8 +22,10 @@ class User_Habit(db.Model):
 
     description_private = db.Column(db.String(500))
 
-    persona = db.relationship("Persona", secondary = "user_persona", primaryjoin=("User_Habit.user_persona_id == User_Persona.id"), secondaryjoin=("User_Persona.id == Persona.id"))
+    # persona = db.relationship("Persona", secondary = "user_persona", primaryjoin=("User_Habit.user_persona_id == User_Persona.id"), secondaryjoin=("User_Persona.id == Persona.id"))
 
     habit = db.relationship("Habit", primaryjoin="and_(User_Habit.habit_id == Habit.id)")
 
     goal = db.relationship("User_Goal", primaryjoin=("and_(User_Habit.linked_goal_id == User_Goal.id)"))
+
+    scores = db.relationship("Habit_Score", primaryjoin="Habit_Score.habit_id == User_Habit.id", cascade="all, delete")

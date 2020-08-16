@@ -65,7 +65,10 @@
 
                 <div class="row mt-4 justify-content-center">
                     <a href="{{ url_for('plan_bp.get_edit_persona', persona_id = persona.persona_id) }}" class="btn btn-primary mx-2">Edit Persona</a>
-                    <a href="#" class="btn btn-danger mx-2">Delete Persona</a>
+                    <form action="{{ url_for('plan_bp.delete_persona', persona_id = persona.persona_id) }}" method="post">
+                        <button type="submit" class="btn btn-danger mx-2">Delete Persona</button>
+                    </form>
+                    
                 </div>
 
             </div>

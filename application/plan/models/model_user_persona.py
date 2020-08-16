@@ -15,3 +15,7 @@ class User_Persona(db.Model):
     description_private = db.Column(db.String(500))
 
     persona = db.relationship("Persona", primaryjoin="and_(User_Persona.persona_id == Persona.id)")
+
+    goals = db.relationship("User_Goal", primaryjoin="User_Goal.user_persona_id == User_Persona.id", cascade="all, delete")
+
+    habits = db.relationship("User_Habit", primaryjoin="User_Habit.user_persona_id == User_Persona.id", cascade="all, delete")
