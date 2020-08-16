@@ -44,23 +44,15 @@
                         
                         {% endif %}
                     </div>
-<!-- 
-                    <div class="col-12 col-md-6 col-lg-3 mt-4">
-                        <h5>Linked Habits</h5>
-                        <p>List of Habits</p>
-                        <br>
-                        <p>Linked to this Goal</p>
-                    </div> -->
-
-
-
 
                 </div>
 
                 <div class="row mt-4 justify-content-center">
                     <a href="{{ url_for('tracking_bp.get_new_goal_score', goal_id = goal.User_Goal.id) }}" class="btn btn-primary mx-2">Track Progress</a>
-                    <a href="#" class="btn btn-info mx-2">Edit Goal</a>
-                    <a href="#" class="btn btn-danger mx-2">Delete Goal</a>
+                    <a href="{{ url_for('plan_bp.get_edit_goal', goal_id = goal.User_Goal.id) }}" class="btn btn-info mx-2">Edit Goal</a>
+                    <form action="{{ url_for('plan_bp.delete_goal', goal_id = goal.User_Goal.id) }}" method="post">
+                        <button type="submit" class="btn btn-danger mx-2">Delete Goal</button>
+                    </form>   
                 </div>
 
             </div>

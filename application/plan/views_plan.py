@@ -131,7 +131,11 @@ def get_plan_home():
         flash("You must be logged in to access that page.", "warning")
         return redirect(url_for("home_bp.homepage"))
 
+##########################
+# CrUD - Persona Routes
+##########################
 
+# Create Persona
 @plan_bp.route("/persona/new", methods=["GET"])
 def get_new_persona():
     if g.user:
@@ -144,7 +148,6 @@ def get_new_persona():
     else:
         flash("You must be logged in to access that page.", "warning")
         return redirect(url_for("home_bp.homepage"))
-
 
 @plan_bp.route("/persona/new", methods=["POST"])
 def add_user_persona():
@@ -183,8 +186,7 @@ def add_user_persona():
 
     return redirect(url_for("plan_bp.get_plan_home"))
 
-
-
+# Update Persona
 @plan_bp.route("/persona/<int:persona_id>/edit", methods=["GET"])
 def get_edit_persona(persona_id):
     if g.user:
@@ -211,8 +213,6 @@ def get_edit_persona(persona_id):
     else:
         flash("You must be logged in to access that page.", "warning")
         return redirect(url_for("home_bp.homepage"))
-
-
 
 @plan_bp.route("/persona/<int:persona_id>/edit", methods=["POST"])
 def update_persona(persona_id):
@@ -262,6 +262,7 @@ def update_persona(persona_id):
         flash("You must be logged in to access that page.", "warning")
         return redirect(url_for("home_bp.homepage"))
 
+# Delete Persona
 @plan_bp.route("/persona/<int:persona_id>/delete", methods=["POST"])
 def delete_persona(persona_id):
     if g.user:
@@ -289,6 +290,11 @@ def delete_persona(persona_id):
         return redirect(url_for("home_bp.homepage"))
 
 
+##########################
+# CrUD - Habit Routes
+##########################
+
+# Create Habit
 @plan_bp.route("/habit/new", methods=["GET"])
 def get_new_habit():
     if g.user:
@@ -319,39 +325,7 @@ def get_new_habit():
         flash("You must be logged in to access that page.", "warning")
         return redirect(url_for("home_bp.homepage"))
 
-
-@plan_bp.route("/goal/new", methods=["GET"])
-def get_new_goal():
-    if g.user:
-        user_personas = User_Persona.query\
-            .join(Persona, User_Persona.persona_id == Persona.id)\
-            .add_columns(Persona.id, Persona.title_en)\
-            .filter(User_Persona.user_id == g.user.id).all()
-
-        persona_list = [(persona.id, persona.title_en) for persona in user_personas]
-
-        user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
-        scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
-
-        user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-        reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
-
-        user_goal_form = UserGoalForm()
-        user_goal_form.persona.choices = persona_list
-        user_goal_form.scoring_system_id.choices = scoring_system_list
-        user_goal_form.schedule_id.choices = reminder_schedule_list
-
-        return render_template("plan_new_goal.html",
-                user_goal_form=user_goal_form)
-
-    else:
-        flash("You must be logged in to access that page.", "warning")
-        return redirect(url_for("home_bp.homepage"))
-
-
-
-
-@plan_bp.route("/add_user_habit", methods=["POST"])
+@plan_bp.route("/habit/new", methods=["POST"])
 def add_user_habit():
     form = UserHabitForm(request.form)
 
@@ -413,9 +387,55 @@ def add_user_habit():
 
     return redirect(url_for("plan_bp.get_plan_home"))
 
+# Update Habit
+@plan_bp.route("/habit/<int:habit_id>/edit", methods=["GET"])
+def get_edit_habit(habit_id):
+    return redirect(url_for("home_bp.homepage"))
 
-# TODO: Implement routes
-@plan_bp.route("/add_user_goal", methods=["POST"])
+@plan_bp.route("/habit/<int:habit_id>/edit", methods=["POST"])
+def update_habit(habit_id):
+    return redirect(url_for("home_bp.homepage"))
+
+# Delete Habit
+@plan_bp.route("/habit/<int:habit_id>/delete", methods=["POST"])
+def delete_habit(habit_id):
+    return redirect(url_for("home_bp.homepage"))
+
+
+##########################
+# CrUD - Goal Routes
+##########################
+
+# Create Goal
+@plan_bp.route("/goal/new", methods=["GET"])
+def get_new_goal():
+    if g.user:
+        user_personas = User_Persona.query\
+            .join(Persona, User_Persona.persona_id == Persona.id)\
+            .add_columns(Persona.id, Persona.title_en)\
+            .filter(User_Persona.user_id == g.user.id).all()
+
+        persona_list = [(persona.id, persona.title_en) for persona in user_personas]
+
+        user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
+        scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
+
+        user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+        reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
+
+        user_goal_form = UserGoalForm()
+        user_goal_form.persona.choices = persona_list
+        user_goal_form.scoring_system_id.choices = scoring_system_list
+        user_goal_form.schedule_id.choices = reminder_schedule_list
+
+        return render_template("plan_new_goal.html",
+                user_goal_form=user_goal_form)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
+
+@plan_bp.route("/goal/new", methods=["POST"])
 def add_user_goal():
     form = UserGoalForm(request.form)
 
@@ -476,3 +496,17 @@ def add_user_goal():
             return redirect(url_for("plan_bp.get_new_goal"))
 
     return redirect(url_for("plan_bp.get_plan_home"))
+
+# Update Goal
+@plan_bp.route("/goal/<int:goal_id>/edit", methods=["GET"])
+def get_edit_goal(goal_id):
+    return redirect(url_for("home_bp.homepage"))
+
+@plan_bp.route("/goal/<int:goal_id>/edit", methods=["POST"])
+def update_goal(goal_id):
+    return redirect(url_for("home_bp.homepage"))
+
+# Delete Goal
+@plan_bp.route("/goal/<int:goal_id>/delete", methods=["POST"])
+def delete_goal(goal_id):
+    return redirect(url_for("home_bp.homepage"))

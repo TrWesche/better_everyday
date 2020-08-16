@@ -1,7 +1,7 @@
-<form action="{{ url_for('plan_bp.add_user_goal')}}" method="post">
-    {{ user_goal_form.hidden_tag() }}
+<form action="{{ url_for('plan_bp.update_habit', habit_id=habit_id)}}" method="post">
+    {{ user_habit_form.hidden_tag() }}
 
-    {% for field in user_goal_form if field.widget.input_type != 'hidden'%}
+    {% for field in user_habit_form if field.widget.input_type != 'hidden'%}
 
     <div class="form-group">
     {% if field.type == "BooleanField" %}
@@ -32,6 +32,6 @@
     {% endfor %}
 
     <a href="{{ url_for('plan_bp.get_plan_home')}}" class="btn btn-secondary my-2">Cancel</a>
-    <button type="submit" class="btn btn-primary my-2">Submit</button>
+    <button type="submit" class="btn btn-primary my-2">Update</button>
 </form>
 

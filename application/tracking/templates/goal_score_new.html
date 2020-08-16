@@ -54,7 +54,7 @@
 
                 {% endfor %}
 
-                <a href="/" class="btn btn-secondary my-2">Cancel</a>
+                <a href="{{ url_for('plan_bp.get_plan_home')}}" class="btn btn-secondary my-2">Cancel</a>
                 <button type="submit" class="btn btn-primary my-2">Submit</button>
             </form>
         </div>
