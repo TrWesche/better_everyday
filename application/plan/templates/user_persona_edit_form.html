@@ -1,4 +1,4 @@
-<form action="{{ url_for('plan_bp.add_user_persona')}}" method="post">
+<form action="{{ url_for('plan_bp.update_persona', persona_id=persona_id)}}" method="post">
     {{ user_persona_form.hidden_tag() }}
 
     {% for field in user_persona_form if field.widget.input_type != 'hidden'%}
@@ -26,6 +26,6 @@
     {% endfor %}
 
     <a href="{{ url_for('plan_bp.get_plan_home')}}" class="btn btn-secondary my-2">Cancel</a>
-    <button type="submit" class="btn btn-primary my-2">Submit</button>
+    <button type="submit" class="btn btn-primary my-2">Update</button>
 </form>
 

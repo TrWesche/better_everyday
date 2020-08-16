@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Update Persona{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-4 display-3">Edit Persona</h1>
+
+    <div class="row mt-5">
+        <div class="col">
+            <div class="btn-group" role="group" aria-label="Basic example">
+                <a href="{{ url_for('plan_bp.get_new_persona') }}" class="btn btn-info" role="button" aria-disabled="true">Persona</a>   
+                <a href="{{ url_for('plan_bp.get_new_habit') }}" class="btn btn-secondary" role="button" aria-disabled="true">Habit</a>   
+                <a href="{{ url_for('plan_bp.get_new_goal') }}" class="btn btn-secondary" role="button" aria-disabled="true">Goal</a>   
+                <a href="{{ url_for('plan_bp.get_new_persona') }}" class="btn btn-secondary" role="button" aria-disabled="true">Scoring System</a>   
+                <a href="{{ url_for('plan_bp.get_new_persona') }}" class="btn btn-secondary" role="button" aria-disabled="true">Schedule</a>   
+            </div>  
+        </div>
+    </div>
+
+    <div class="row mt-3">
+        <div class="col">
+            <div class="card">
+                <h5 class="card-header">Persona</h5>
+                <div class="card-body">
+                    {% include "user_persona_edit_form.html" ignore missing %}
+                </div>
+            </div>
+        
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -258,7 +258,7 @@ def get_user_habit_scores():
             jsonResponse = data_table.ToJSon(columns_order=("date", "score", "score_label"),
                                         order_by="date")
 
-            print(jsonResponse)
+            # print(jsonResponse)
 
         else:
             jsonResponse = {'info': 'No data available.'}
@@ -338,7 +338,7 @@ def get_user_goal_scores():
             jsonResponse = data_table.ToJSon(columns_order=("date", "score", "score_label"),
                                         order_by="date")
 
-            print(jsonResponse)
+            # print(jsonResponse)
 
         else:
             jsonResponse = {'info': 'No data available.'}

@@ -90,7 +90,7 @@ def get_plan_home():
             .add_columns(User_Habit.user_id, Habit.title_en, Habit.description_public)\
             .outerjoin(User_Persona, User_Persona.id == User_Habit.user_persona_id)\
             .add_columns(User_Persona.id.label("persona_id"))\
-            .outerjoin(Persona, User_Persona.id == Persona.id)\
+            .outerjoin(Persona, User_Persona.persona_id == Persona.id)\
             .add_columns(Persona.title_en.label("persona_title"))\
             .filter(User_Habit.user_id == g.user.id).all()
 
@@ -99,7 +99,7 @@ def get_plan_home():
             .add_columns(User_Goal.user_id, Goal.title_en, Goal.description_public)\
             .outerjoin(User_Persona, User_Persona.id == User_Goal.user_persona_id)\
             .add_columns(User_Persona.id.label("persona_id"))\
-            .outerjoin(Persona, User_Persona.id == Persona.id)\
+            .outerjoin(Persona, User_Persona.persona_id == Persona.id)\
             .add_columns(Persona.title_en.label("persona_title"))\
             .filter(User_Goal.user_id == g.user.id).all()
 
@@ -116,11 +116,11 @@ def get_plan_home():
                 append_obj["linked_goals"] = []
 
                 for habit in user_habits:
-                    if habit.User_Habit.user_persona_id == persona.User_Persona.persona_id:
+                    if habit.User_Habit.user_persona_id == persona.User_Persona.id:
                         append_obj.get("linked_habits").append(habit.title_en)
 
                 for goal in user_goals:
-                    if goal.User_Goal.user_persona_id == persona.User_Persona.persona_id:
+                    if goal.User_Goal.user_persona_id == persona.User_Persona.id:
                         append_obj.get("linked_goals").append(goal.title_en)
 
                 persona_render_list.append(append_obj)
@@ -201,38 +201,76 @@ def get_edit_persona(persona_id):
                 active = target_persona.User_Persona.active
             )
 
-        return render_template("plan_new_persona.html",
-                user_persona_form=user_persona_form)
+            return render_template("plan_edit_persona.html",
+                    user_persona_form=user_persona_form, persona_id=persona_id)
+
+        else:
+            flash("We were unable to retrive your details for that persona.", "warning")
+            return redirect(url_for("home_bp.homepage"))
 
     else:
         flash("You must be logged in to access that page.", "warning")
         return redirect(url_for("home_bp.homepage"))
 
 
-# @plan_bp.route("/persona/<int:persona_id>/edit", methods=["PATCH"])
-# def update_persona(persona_id):
-#     if g.user:
 
-#         form = UserPersonaFrom(request.form)
+@plan_bp.route("/persona/<int:persona_id>/edit", methods=["POST"])
+def update_persona(persona_id):
+    print("Entered Edit:")
 
-#         target_persona = User_Persona.query\
-#             .filter(and_(User_Persona.user_id == g.user.id, User_Persona.id == persona_id)).first()
+    if g.user:
 
-#         if target_persona and form.validate_on_submit():
+        form = UserPersonaFrom(request.form)
+
+        target_user_persona = User_Persona.query\
+            .filter(and_(User_Persona.user_id == g.user.id, User_Persona.id == persona_id)).first()
+
+        print("User OK:")
+        print(target_user_persona)
 
 
-#             user_persona_form = UserPersonaFrom(
-#                 title = target_persona.title_en,
-#                 description = target_persona.User_Persona.description_private,
-#                 active = target_persona.User_Persona.active
-#             )
+        if target_user_persona and form.validate_on_submit():
 
-#         return render_template("plan_new_persona.html",
-#                 user_persona_form=user_persona_form)
+            print("Form OK:")
 
-#     else:
-#         flash("You must be logged in to access that page.", "warning")
-#         return redirect(url_for("home_bp.homepage"))
+            # Check for Persona with that name in dictionary table
+            target_persona = Persona.query.filter(Persona.title_en == form.title.data.lower()).first()
+
+            print(target_persona)
+
+            # If does not exist create a new persona under target name
+            if not target_persona:
+                target_persona = Persona(title_en = form.title.data.lower())
+                db.session.add(target_persona)
+
+                try:
+                    db.session.commit()
+                except Exception as e:
+                    flash("Error: Unable to update user persona - creating new persona failed", "danger")
+                    print(e)
+                    db.session.rollback()
+                    return redirect(url_for("plan_bp.get_plan_home"))
+            
+            # Create updated User_Persona object with new id an description
+            target_user_persona.active = form.active.data
+            target_user_persona.user_id = g.user.id
+            target_user_persona.persona_id = target_persona.id
+            target_user_persona.description_private = form.description.data
+
+            try:
+                db.session.commit()
+                return redirect(url_for("plan_bp.get_plan_home"))
+            except Exception as e:
+                flash("Error: Unable to update user persona - update action failed", "danger")
+                print(e)
+                db.session.rollback()  
+
+        return render_template("plan_edit_persona.html",
+                user_persona_form=form)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
 
 
 
