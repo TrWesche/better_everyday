@@ -516,7 +516,29 @@ def update_habit(habit_id):
 # Delete Habit
 @plan_bp.route("/habit/<int:habit_id>/delete", methods=["POST"])
 def delete_habit(habit_id):
-    return redirect(url_for("home_bp.homepage"))
+    if g.user:
+
+        target_user_habit = User_Habit.query\
+            .filter(and_(User_Habit.user_id == g.user.id, User_Habit.id == habit_id)).first()
+
+        if target_user_habit:
+            db.session.delete(target_user_habit)
+
+            try:
+                db.session.commit()
+            except Exception as e:
+                flash("Error: Unable to delete user habit", "danger")
+                print(e)
+                db.session.rollback()  
+        
+        else:
+            flash("You do not have appropriate permissions to delete that user habit.", "warning")    
+        
+        return redirect(url_for("plan_bp.get_plan_home"))
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
 
 
 ##########################
