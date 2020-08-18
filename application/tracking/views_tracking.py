@@ -115,7 +115,7 @@ def get_new_scoring_params(scoring_sys_id):
 
         parameters = Scoring_System.query\
                 .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
-                .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en)\
+                .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en,  Scoring_System_Params.id)\
                 .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys_id))\
                 .order_by(Scoring_System_Params.score_bp)\
                 .all()

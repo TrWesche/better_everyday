@@ -25,6 +25,8 @@
                         <th scope="col">Score Input</th>
                         <th scope="col">Score Output</th>
                         <th scope="col">Description</th>
+                        <th scope="col"></th>
+                        <th scope="col"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,6 +35,8 @@
                         <td>{{ param.score_input }}</td>
                         <td>{{ param.score_output }}</td>
                         <td>{{ param.name_en }}</td>
+                        <td><a href="{{ url_for('tracking_bp.get_edit_scoring_param', scoring_sys_id = scoring_system.id, scoring_param_id = param.id) }}"><i class="fas fa-edit"></i></a></td>
+                        <td><a href="{{ url_for('tracking_bp.delete_scoring_param', scoring_sys_id = scoring_system.id, scoring_param_id = param.id) }}"><i class="fas fa-trash"></i></a></td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -66,7 +70,7 @@
 
                 {% endfor %}
 
-                <a href="/" class="btn btn-secondary my-2">Cancel</a>
+                <a href="{{ url_for('tracking_bp.get_tracking_home') }}" class="btn btn-secondary my-2">Cancel</a>
                 <button type="submit" class="btn btn-primary my-2">Submit</button>
             </form>
         </div>

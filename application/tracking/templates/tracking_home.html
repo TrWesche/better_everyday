@@ -13,13 +13,40 @@
     </div>
 
 
-    {% for system in scoring_systems %}
-    <div class="row mt-2">
+    {% if scoring_systems %}
+        {% for system in scoring_systems %}
+        <div class="row my-5 shadow p-3 mb-5 bg-white rounded">
+            <div class="col">
+                <div class="row">
+                    <h2 class="display-4">{{ system.title_en }}</h2>
+                </div>
+                    
+                <div class="row">
+                    <p class="lead">{{ system.description }}</p>
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="gviz_scoring_sys" id="gviz_scoring_sys{{ system.id }}" data-sys="{{ system.id }}" data-title="{{ system.title_en }}"></div>
+                    </div>
+                </div>
+
+                <div class="row mb-2">
+                    <a class="btn btn-primary mx-2" href="{{ url_for('tracking_bp.get_new_scoring_params', scoring_sys_id = system.id) }}" role="button">Edit Parameters</a>
+                    <a class="btn btn-info mx-2" href="{{ url_for('tracking_bp.get_edit_scoring_sys', scoring_sys_id = system.id) }}" role="button">Update System</a>
+                    <a class="btn btn-danger mx-2" href="{{ url_for('tracking_bp.delete_scoring_sys', scoring_sys_id = system.id) }}" role="button">Delete System</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="row mt-5">
         <div class="col">
-            <div class="gviz_scoring_sys" id="gviz_scoring_sys{{ system.id }}" data-sys="{{ system.id }}" data-title="{{ system.title_en }}"></div>
+            <p class="lead">You do not have any scoring systems yet.</p>
         </div>
     </div>
-    {% endfor %}
+
+    {% endif %}
 
 </div>
 
