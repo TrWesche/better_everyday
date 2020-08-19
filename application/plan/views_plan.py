@@ -308,15 +308,15 @@ def get_new_habit():
         user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
         scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
 
-        user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-        reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
+        # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+        # reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
         
 
         user_habit_form = UserHabitForm()
         
         user_habit_form.persona.choices = persona_list
         user_habit_form.scoring_system_id.choices = scoring_system_list
-        user_habit_form.schedule_id.choices = reminder_schedule_list
+        # user_habit_form.schedule_id.choices = reminder_schedule_list
 
         return render_template("plan_new_habit.html",
                 user_habit_form=user_habit_form)
@@ -337,9 +337,9 @@ def add_user_habit():
     scoring_system_list = [(system.id, "s") for system in user_scoring_systems]
     form.scoring_system_id.choices = scoring_system_list
 
-    user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-    reminder_schedule_list = [(schedule.id, "s") for schedule in user_reminder_schedule]
-    form.schedule_id.choices = reminder_schedule_list
+    # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+    # reminder_schedule_list = [(schedule.id, "s") for schedule in user_reminder_schedule]
+    # form.schedule_id.choices = reminder_schedule_list
 
 
     if form.validate_on_submit():
@@ -363,14 +363,14 @@ def add_user_habit():
         persona_id = target_persona.id
         habit_id = target_habit.id
         scoring_system_id = form.scoring_system_id.data
-        schedule_id = form.schedule_id.data
+        # schedule_id = form.schedule_id.data
 
         new_user_habit = User_Habit(
                             active = active, 
                             user_id = user_id, 
                             user_persona_id = persona_id, 
                             scoring_system_id = scoring_system_id, 
-                            schedule_id = schedule_id,
+                            # schedule_id = schedule_id,
                             habit_id = habit_id, 
                             linked_goal_id = None,
                             description_private = form.description.data)
@@ -412,22 +412,22 @@ def get_edit_habit(habit_id):
             scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
 
             # Retrieve & Create list of valid reminder schedules for the logged in user in Tuple Format (id, display_text)
-            user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-            reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
+            # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+            # reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
 
             # Create form and populate the select fields with valid selection options
             user_habit_form = UserHabitForm()
             
             user_habit_form.persona.choices = persona_list
             user_habit_form.scoring_system_id.choices = scoring_system_list
-            user_habit_form.schedule_id.choices = reminder_schedule_list
+            # user_habit_form.schedule_id.choices = reminder_schedule_list
 
             # Load data retrieved from the database into the form object for rendering
             user_habit_form.title.data = target_user_habit.title_en
             user_habit_form.description.data = target_user_habit.User_Habit.description_private
             user_habit_form.persona.data = target_user_habit.User_Habit.user_persona_id
             user_habit_form.scoring_system_id.data = target_user_habit.User_Habit.scoring_system_id
-            user_habit_form.schedule_id.data = target_user_habit.User_Habit.schedule_id
+            # user_habit_form.schedule_id.data = target_user_habit.User_Habit.schedule_id
             user_habit_form.active.data = target_user_habit.User_Habit.active
 
 
@@ -467,9 +467,9 @@ def update_habit(habit_id):
 
             # Retrieve & Create list of valid reminder schedules for the logged in user in Tuple Format (id, text)
             # Text is not being validated here, only id number is checked hense text is not dynamically loaded
-            user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-            reminder_schedule_list = [(schedule.id, "s") for schedule in user_reminder_schedule]
-            form.schedule_id.choices = reminder_schedule_list
+            # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+            # reminder_schedule_list = [(schedule.id, "s") for schedule in user_reminder_schedule]
+            # form.schedule_id.choices = reminder_schedule_list
 
             if form.validate_on_submit():
                 target_habit = Habit.query.filter(Habit.title_en == form.title.data.lower()).first()
@@ -491,7 +491,7 @@ def update_habit(habit_id):
                 target_user_habit.active = form.active.data
                 target_user_habit.user_persona_id = target_persona.id
                 target_user_habit.scoring_system_id = form.scoring_system_id.data
-                target_user_habit.schedule_id = form.schedule_id.data
+                # target_user_habit.schedule_id = form.schedule_id.data
                 target_user_habit.habit_id = target_habit.id
                 target_user_habit.description_private = form.description.data
 
@@ -559,13 +559,13 @@ def get_new_goal():
         user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
         scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
 
-        user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-        reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
+        # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+        # reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
 
         user_goal_form = UserGoalForm()
         user_goal_form.persona.choices = persona_list
         user_goal_form.scoring_system_id.choices = scoring_system_list
-        user_goal_form.schedule_id.choices = reminder_schedule_list
+        # user_goal_form.schedule_id.choices = reminder_schedule_list
 
         return render_template("plan_new_goal.html",
                 user_goal_form=user_goal_form)
@@ -586,9 +586,9 @@ def add_user_goal():
     scoring_system_list = [(system.id, "s") for system in user_scoring_systems]
     form.scoring_system_id.choices = scoring_system_list
 
-    user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-    reminder_schedule_list = [(schedule.id, "s") for schedule in user_reminder_schedule]
-    form.schedule_id.choices = reminder_schedule_list
+    # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+    # reminder_schedule_list = [(schedule.id, "s") for schedule in user_reminder_schedule]
+    # form.schedule_id.choices = reminder_schedule_list
 
     if form.validate_on_submit():
         target_goal = Goal.query.filter(Goal.title_en == form.title.data.lower()).first()
@@ -611,7 +611,7 @@ def add_user_goal():
         persona_id = target_persona.id
         goal_id = target_goal.id
         scoring_system_id = form.scoring_system_id.data
-        schedule_id = form.schedule_id.data
+        # schedule_id = form.schedule_id.data
 
 
         #!!!# The user should also be able to link a goal to a habit in the future
@@ -620,7 +620,7 @@ def add_user_goal():
                             user_id = user_id, 
                             user_persona_id = persona_id, 
                             scoring_system_id = scoring_system_id, 
-                            schedule_id = schedule_id,
+                            # schedule_id = schedule_id,
                             goal_id = goal_id, 
                             description_private = form.description.data)
 
@@ -661,22 +661,22 @@ def get_edit_goal(goal_id):
             scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
 
             # Retrieve & Create list of valid reminder schedules for the logged in user in Tuple Format (id, display_text)
-            user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-            reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
+            # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+            # reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
 
             # Create form and populate the select fields with valid selection options
             user_goal_form = UserGoalForm()
             
             user_goal_form.persona.choices = persona_list
             user_goal_form.scoring_system_id.choices = scoring_system_list
-            user_goal_form.schedule_id.choices = reminder_schedule_list
+            # user_goal_form.schedule_id.choices = reminder_schedule_list
 
             # Load data retrieved from the database into the form object for rendering
             user_goal_form.title.data = target_user_goal.title_en
             user_goal_form.description.data = target_user_goal.User_Goal.description_private
             user_goal_form.persona.data = target_user_goal.User_Goal.user_persona_id
             user_goal_form.scoring_system_id.data = target_user_goal.User_Goal.scoring_system_id
-            user_goal_form.schedule_id.data = target_user_goal.User_Goal.schedule_id
+            # user_goal_form.schedule_id.data = target_user_goal.User_Goal.schedule_id
             user_goal_form.active.data = target_user_goal.User_Goal.active
 
 
@@ -716,9 +716,9 @@ def update_goal(goal_id):
 
             # Retrieve & Create list of valid reminder schedules for the logged in user in Tuple Format (id, text)
             # Text is not being validated here, only id number is checked hense text is not dynamically loaded
-            user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-            reminder_schedule_list = [(schedule.id, "s") for schedule in user_reminder_schedule]
-            form.schedule_id.choices = reminder_schedule_list
+            # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+            # reminder_schedule_list = [(schedule.id, "s") for schedule in user_reminder_schedule]
+            # form.schedule_id.choices = reminder_schedule_list
 
             if form.validate_on_submit():
                 target_goal = Goal.query.filter(Goal.title_en == form.title.data.lower()).first()
@@ -740,7 +740,7 @@ def update_goal(goal_id):
                 target_user_goal.active = form.active.data
                 target_user_goal.user_persona_id = target_persona.id
                 target_user_goal.scoring_system_id = form.scoring_system_id.data
-                target_user_goal.schedule_id = form.schedule_id.data
+                # target_user_goal.schedule_id = form.schedule_id.data
                 target_user_goal.habit_id = target_goal.id
                 target_user_goal.description_private = form.description.data
 
