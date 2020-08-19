@@ -35,8 +35,14 @@
                         <td>{{ param.score_input }}</td>
                         <td>{{ param.score_output }}</td>
                         <td>{{ param.name_en }}</td>
-                        <td><a href="{{ url_for('tracking_bp.get_edit_scoring_param', scoring_sys_id = scoring_system.id, scoring_param_id = param.id) }}"><i class="fas fa-edit"></i></a></td>
-                        <td><a href="{{ url_for('tracking_bp.delete_scoring_param', scoring_sys_id = scoring_system.id, scoring_param_id = param.id) }}"><i class="fas fa-trash"></i></a></td>
+                        <td><a href="{{ url_for('tracking_bp.get_edit_scoring_param', scoring_sys_id = scoring_system.id, scoring_param_id = param.id) }}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i></a></td>
+                        <td>
+                            <form action="{{ url_for('tracking_bp.delete_scoring_param', scoring_sys_id = scoring_system.id, scoring_param_id = param.id) }}" method="post">
+                                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+
+                        
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -44,16 +50,30 @@
         </div>
     </div>
     {% endif %}
+    <div class="row mt-2">
+
+    </div>
+    {% if edit %}
+        <a href="{{ url_for('tracking_bp.get_new_scoring_params', scoring_sys_id = scoring_system.id) }}" class="btn btn-secondary my-2">Add New</a>
+    {% endif %}
 
     <div class="row mt-5">
         <div class="col">
-            <h3>Add Parameters:</h3>
+            {% if edit %}
+            <h3>Update Parameter:</h3>
+            {% else %}
+            <h3>Add Parameter:</h3>
+            {% endif %}
         </div>
     </div>
 
     <div class="row mt-2">
         <div class="col">
+            {% if edit %}
+            <form action="{{ url_for('tracking_bp.update_scoring_param', scoring_sys_id = scoring_system.id, scoring_param_id = scoring_param_id) }}" method="post">
+            {% else %}
             <form action="{{ url_for('tracking_bp.add_new_scoring_param', scoring_sys_id = scoring_system.id) }}" method="post">
+            {% endif %}
                 {{ form.hidden_tag() }}
 
                 {% for field in form if field.widget.input_type != 'hidden'%}
@@ -70,7 +90,7 @@
 
                 {% endfor %}
 
-                <a href="{{ url_for('tracking_bp.get_tracking_home') }}" class="btn btn-secondary my-2">Cancel</a>
+                <a href="{{ url_for('tracking_bp.get_tracking_home') }}" class="btn btn-info my-2">Back</a>
                 <button type="submit" class="btn btn-primary my-2">Submit</button>
             </form>
         </div>
