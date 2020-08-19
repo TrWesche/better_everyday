@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block page_title %}Update Scoring System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-4 display-3">Update {{ scoring_sys.title_en }}</h1>
+
+    <div class="row mt-5">
+        <div class="col">
+            <form action="{{ url_for('tracking_bp.update_scoring_sys', scoring_sys_id = scoring_sys.id) }}" method="post">
+                {{ form.hidden_tag() }}
+
+                {% for field in form if field.widget.input_type != 'hidden'%}
+
+                <div class="form-group">
+                    {{ field.label(class_="font-weight-bolder") }}
+                    {{ field(class_="form-control")}}
+                    {% for error in field.errors %}
+                    <small class="form-text text-danger">
+                    {{error}}
+                    </small>
+                    {% endfor %}
+                </div>
+
+                {% endfor %}
+
+                <a href="{{ url_for('tracking_bp.get_tracking_home') }}" class="btn btn-secondary my-2">Cancel</a>
+                <button type="submit" class="btn btn-primary my-2">Update</button>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

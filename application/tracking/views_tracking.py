@@ -35,8 +35,12 @@ def get_tracking_home():
     if g.user:
         scoring_systems = Scoring_System.query.filter(Scoring_System.user_id == g.user.id).all()
 
-        # for system in scoring_systems:
-        #     print(system)
+        # TODO: Implement button disable if there is an associated habit or goal
+        # associated_habits = User_Habit.query\
+        #     .filter(User_Habit.scoring_system_id == scoring_sys.id).all()
+
+        # associated_goals = User_Goal.query\
+        #     .filter(User_Goal.scoring_system_id == scoring_sys.id).all()
 
     else:
         flash("Please login to continue.", "warning")
@@ -86,20 +90,98 @@ def add_new_scoring_sys():
         else:
             return render_template(url_for("tracking_bp.get_new_scoring_sys"), form=form)
 
-# TODO
+    else:
+        flash("Please login to continue.", "warning")
+        return redirect(url_for("home_bp.homepage"))  
+
 # Update Scoring System
 @tracking_bp.route("/scoring_sys/<int:scoring_sys_id>/edit", methods=["GET"])
 def get_edit_scoring_sys(scoring_sys_id):
-    return redirect(url_for("tracking_bp.get_new_scoring_sys"))
+    if g.user:
+
+        scoring_sys = Scoring_System.query\
+            .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys_id)).first()
+
+        if scoring_sys:
+            form = ScoringSystemForm(
+                title = scoring_sys.title_en,
+                description = scoring_sys.description
+            )
+
+            return render_template("scoring_system_edit.html",
+                    form=form, scoring_sys=scoring_sys)
+        else:
+            flash("We were unable to retrive your details for that scoring system.", "warning")
+            return redirect(url_for("home_bp.homepage"))
+
+    else:
+        flash("Please login to continue.", "warning")
+        return redirect(url_for("home_bp.homepage"))  
 
 @tracking_bp.route("/scoring_sys/<int:scoring_sys_id>/edit", methods=["POST"])
 def update_scoring_sys(scoring_sys_id):
+    if g.user:
+        scoring_sys = Scoring_System.query\
+            .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys_id)).first()
+
+        if scoring_sys:
+            form = ScoringSystemForm(request.form)
+            if form.validate_on_submit():
+                scoring_sys.title_en = form.title.data
+                scoring_sys.description = form.description.data
+
+                try:
+                    db.session.commit()
+                    return redirect(url_for("tracking_bp.get_tracking_home"))
+                except Exception as e:
+                    flash("An error occured, if this problem persists please contact our user assistance dept", "danger")
+                    print(e)
+                    db.session.rollback()
+            else:
+                return render_template("scoring_system_edit.html",
+                        form=form, scoring_sys=scoring_sys)
+        else:
+            flash("We were unable to retrive your details for that scoring system.", "warning")
+            return redirect(url_for("tracking_bp.get_tracking_home"))
+    else:
+        flash("Please login to continue.", "warning")
+        return redirect(url_for("home_bp.homepage"))  
+
     return redirect(url_for("tracking_bp.get_new_scoring_sys"))
+
 
 # Delete Scoring System
 @tracking_bp.route("/scoring_sys/<int:scoring_sys_id>/delete", methods=["POST"])
 def delete_scoring_sys(scoring_sys_id):
-    return redirect(url_for("tracking_bp.get_new_scoring_sys"))
+    if g.user:
+        scoring_sys = Scoring_System.query\
+            .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys_id)).first()
+
+        associated_habits = User_Habit.query\
+            .filter(User_Habit.scoring_system_id == scoring_sys.id).all()
+
+        associated_goals = User_Goal.query\
+            .filter(User_Goal.scoring_system_id == scoring_sys.id).all()
+
+
+        if scoring_sys and not associated_habits and not associated_goals:
+
+            db.session.delete(scoring_sys)
+
+            try:
+                db.session.commit()
+            except Exception as e:
+                flash("An error occured, if this problem persists please contact our user assistance dept", "danger")
+                print(e)
+                db.session.rollback()
+        else:
+            flash("We were unable to delete this scoring system, please ensure you have appropriate access and there are not habits or goals linked to this system.", "warning")
+
+        return redirect(url_for("tracking_bp.get_tracking_home"))
+    else:
+        flash("Please login to continue.", "warning")
+        return redirect(url_for("home_bp.homepage"))  
+
 
 
 ###################################

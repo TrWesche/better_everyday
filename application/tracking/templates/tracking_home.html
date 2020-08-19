@@ -34,7 +34,9 @@
                 <div class="row mb-2">
                     <a class="btn btn-primary mx-2" href="{{ url_for('tracking_bp.get_new_scoring_params', scoring_sys_id = system.id) }}" role="button">Edit Parameters</a>
                     <a class="btn btn-info mx-2" href="{{ url_for('tracking_bp.get_edit_scoring_sys', scoring_sys_id = system.id) }}" role="button">Update System</a>
-                    <a class="btn btn-danger mx-2" href="{{ url_for('tracking_bp.delete_scoring_sys', scoring_sys_id = system.id) }}" role="button">Delete System</a>
+                    <form action="{{ url_for('tracking_bp.delete_scoring_sys', scoring_sys_id = system.id) }}" method="post">
+                        <button type="submit" class="btn btn-danger mx-2">Delete System</button>
+                    </form>  
                 </div>
             </div>
         </div>
