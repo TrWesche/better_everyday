@@ -1,0 +1,4 @@
+.scroll_window {
+  overflow: auto;
+  max-height: 25rem;
+}

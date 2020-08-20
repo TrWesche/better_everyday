@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, flash, request, session, g, jsonify, url_for
 from flask import current_app as app
-from sqlalchemy import exc, and_
+from sqlalchemy import exc, and_, desc
 from .models.model_habit_score import Habit_Score
 from .models.model_goal_score import Goal_Score
 from .models.model_scoring_system import Scoring_System
@@ -17,7 +17,7 @@ from .forms.form_scoring_param import ScoringSystemParamForm
 from .forms.form_goal_score import GoalScoreForm
 from .forms.form_habit_score import HabitScoreForm
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from application import db
 import gviz_api
 
@@ -255,7 +255,6 @@ def add_new_scoring_param(scoring_sys_id):
         else:
             return render_template("scoring_system_params.html", form = form, scoring_system = scoring_system, parameters = parameters)
 
-# TODO
 # Update Scoring System Parameter
 @tracking_bp.route("/scoring_sys/<int:scoring_sys_id>/params/<int:scoring_param_id>/edit", methods=["GET"])
 def get_edit_scoring_param(scoring_sys_id, scoring_param_id):
@@ -295,7 +294,6 @@ def get_edit_scoring_param(scoring_sys_id, scoring_param_id):
     else:
         flash("Please login to continue.", "warning")
         return redirect(url_for("home_bp.homepage"))  
-
 
 @tracking_bp.route("/scoring_sys/<int:scoring_sys_id>/params/<int:scoring_param_id>/edit", methods=["POST"])
 def update_scoring_param(scoring_sys_id, scoring_param_id):
@@ -368,17 +366,10 @@ def delete_scoring_param(scoring_sys_id, scoring_param_id):
         flash("Please login to continue.", "warning")
         return redirect(url_for("home_bp.homepage"))  
 
-    
-
 
 ###################################
 # CRUD - Goal Scores
 ###################################
-# TODO
-# View All Goal Scores
-@tracking_bp.route("/goal_scores/<int:goal_id>", methods=["GET"])
-def get_goal_scores(goal_id):
-    return redirect(url_for("tracking_bp.get_new_goal_score"))
 
 # Create New Goal Score
 @tracking_bp.route("/goal_scores/<int:goal_id>/new", methods=["GET"])
@@ -392,9 +383,14 @@ def get_new_goal_score(goal_id):
             .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id))\
             .first()
         
+        goal_scores = Goal_Score.query\
+            .filter(Goal_Score.goal_id == goal_id)\
+            .order_by(desc(Goal_Score.date))\
+            .all()
+
         form.date.data = datetime.today()
 
-        return render_template("goal_score_new.html", form = form, user_goal = user_goal)
+        return render_template("goal_score_new.html", form = form, user_goal = user_goal, goal_scores = goal_scores)
 
     else:
         flash("You must be logged in to access that page.", "warning")
@@ -452,18 +448,127 @@ def add_new_goal_score(goal_id):
 # TODO
 # Update Goal Score
 @tracking_bp.route("/goal_scores/<int:goal_id>/scores/<int:score_id>/update", methods=["GET"])
-def get_edit_goal_score(goal_id):
-    return redirect(url_for("tracking_bp.get_new_goal_score"))
+def get_edit_goal_score(goal_id, score_id):
+    if g.user:
+
+        user_goal = User_Goal.query\
+            .join(Goal, Goal.id == User_Goal.goal_id)\
+            .add_columns(Goal.title_en, Goal.description_public)\
+            .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id))\
+            .first()
+
+        if user_goal:
+            goal_scores = Goal_Score.query\
+                .filter(Goal_Score.goal_id == goal_id)\
+                .order_by(desc(Goal_Score.date))\
+                .all()
+
+            target_score = Goal_Score.query\
+                .filter(Goal_Score.id == score_id)\
+                .first()
+
+            form = GoalScoreForm(
+                date = target_score.date,
+                score = target_score.score
+            )
+
+            return render_template("goal_score_new.html", form = form, user_goal = user_goal, goal_scores = goal_scores, edit = True, target_score_id = target_score.id)
+
+        else:
+            flash("We were unable to retrieve the requested goal.", "warning")
+            return redirect(url_for("plan_bp.get_plan_home"))
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
 
 @tracking_bp.route("/goal_scores/<int:goal_id>/scores/<int:score_id>/update", methods=["POST"])
-def update_goal_score(goal_id):
-    return redirect(url_for("tracking_bp.get_new_goal_score"))
+def update_goal_score(goal_id, score_id):
+    if g.user:
+        form = GoalScoreForm(obj=request.form)
+
+        user_goal = User_Goal.query\
+            .join(Goal, Goal.id == User_Goal.goal_id)\
+            .add_columns(Goal.title_en, Goal.description_public)\
+            .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id))\
+            .first()
+
+        goal_scores = Goal_Score.query\
+            .filter(Goal_Score.goal_id == goal_id)\
+            .order_by(desc(Goal_Score.date))\
+            .all()
+
+        if user_goal and form.validate_on_submit():
+
+            date_check = Goal_Score.query\
+                .join(User_Goal, User_Goal.id == Goal_Score.goal_id)\
+                .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id, Goal_Score.date == form.date.data))\
+                .first()
+
+            if not date_check or date_check.id == score_id:
+                target_score = Goal_Score.query\
+                    .filter(Goal_Score.id == score_id)\
+                    .first()
+
+                target_score.date = form.date.data
+                target_score.score = form.score.data
+
+                # Try adding goal score to database
+                try:
+                    db.session.commit()    
+                except Exception as e:
+                    flash("Oops... We were unable to update this goal.  We're looking into it!", "danger")
+                    print(e)
+                    db.session.rollback()
+
+                return redirect(url_for("tracking_bp.get_new_goal_score", goal_id = goal_id))
+            
+            else:
+                flash("An entry already exists for the target date.", "info")
+                db.session.rollback()
+                return render_template("goal_score_new.html", form = form, user_goal = user_goal, goal_scores = goal_scores, edit = True)
+
+        else:
+            return render_template("goal_score_new.html", form = form, user_goal = user_goal, goal_scores = goal_scores, edit = True)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
 
 # Delete Goal Score
 @tracking_bp.route("/goal_scores/<int:goal_id>/scores/<int:score_id>/delete", methods=["POST"])
-def delete_goal_score(goal_id):
-    return redirect(url_for("tracking_bp.get_new_goal_score"))
+def delete_goal_score(goal_id, score_id):
+    if g.user:
 
+        user_goal = User_Goal.query\
+            .join(Goal, Goal.id == User_Goal.goal_id)\
+            .add_columns(Goal.title_en, Goal.description_public)\
+            .join(Goal_Score, Goal_Score.goal_id == User_Goal.goal_id)\
+            .add_columns(Goal_Score.id)\
+            .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id, Goal_Score.id == score_id))\
+            .first()
+
+        if user_goal:
+            target_score = Goal_Score.query\
+                .filter(Goal_Score.id == score_id)\
+                .first()
+
+            db.session.delete(target_score)
+
+            try:
+                db.session.commit()
+            except Exception as e:
+                flash("An error occured, if this problem persists please contact support", "danger")
+                print(e)
+                db.session.rollback()
+        else:
+            flash("We were unable to find the target score.", "warning")
+
+        return redirect(url_for("tracking_bp.get_new_goal_score", goal_id = goal_id))
+
+    else:
+        flash("Please login to continue.", "warning")
+        return redirect(url_for("home_bp.homepage"))  
 
 ###################################
 # CRUD - Habit Scores
