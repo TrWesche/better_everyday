@@ -28,7 +28,6 @@ tracking_bp = Blueprint(
     static_folder='static'
 )
 
-# TODO: Implement routes
 @tracking_bp.route("/", methods=["GET"])
 def get_tracking_home():
 
@@ -148,7 +147,6 @@ def update_scoring_sys(scoring_sys_id):
         return redirect(url_for("home_bp.homepage"))  
 
     return redirect(url_for("tracking_bp.get_new_scoring_sys"))
-
 
 # Delete Scoring System
 @tracking_bp.route("/scoring_sys/<int:scoring_sys_id>/delete", methods=["POST"])
@@ -445,7 +443,6 @@ def add_new_goal_score(goal_id):
         flash("You must be logged in to access that page.", "warning")
         return redirect(url_for("home_bp.homepage"))
 
-# TODO
 # Update Goal Score
 @tracking_bp.route("/goal_scores/<int:goal_id>/scores/<int:score_id>/update", methods=["GET"])
 def get_edit_goal_score(goal_id, score_id):
@@ -573,12 +570,8 @@ def delete_goal_score(goal_id, score_id):
 ###################################
 # CRUD - Habit Scores
 ###################################
-# TODO
-# View All Habit Scores
-@tracking_bp.route("/habit_scores/<int:habit_id>", methods=["GET"])
-def get_habit_scores(habit_id):
-    return redirect(url_for("tracking_bp.get_new_habit_score"))
 
+# Create New Habit Score
 @tracking_bp.route("/habit_scores/<habit_id>/new", methods=["GET"])
 def get_new_habit_score(habit_id):
     if g.user:
@@ -590,9 +583,14 @@ def get_new_habit_score(habit_id):
             .filter(and_(User_Habit.user_id == g.user.id, User_Habit.id == habit_id))\
             .first()
         
+        habit_scores = Habit_Score.query\
+            .filter(Habit_Score.habit_id == habit_id)\
+            .order_by(desc(Habit_Score.date))\
+            .all()
+
         form.date.data = datetime.today()
 
-        return render_template("habit_score_new.html", form = form, user_habit = user_habit)
+        return render_template("habit_score_new.html", form = form, user_habit = user_habit, habit_scores = habit_scores)
 
     else:
         flash("You must be logged in to access that page.", "warning")
@@ -648,23 +646,135 @@ def add_new_habit_score(habit_id):
         flash("You must be logged in to access that page.", "warning")
         return redirect(url_for("home_bp.homepage"))
 
-# TODO
 # Update Habit Score
 @tracking_bp.route("/habit_scores/<int:habit_id>/scores/<int:score_id>/update", methods=["GET"])
-def get_edit_habit_score(habit_id):
-    return redirect(url_for("tracking_bp.get_new_habit_score"))
+def get_edit_habit_score(habit_id, score_id):
+    if g.user:
+
+        user_habit = User_Habit.query\
+            .join(Habit, Habit.id == User_Habit.habit_id)\
+            .add_columns(Habit.title_en, Habit.description_public)\
+            .filter(and_(User_Habit.user_id == g.user.id, User_Habit.id == habit_id))\
+            .first()
+
+        if user_habit:
+            habit_scores = Habit_Score.query\
+                .filter(Habit_Score.habit_id == habit_id)\
+                .order_by(desc(Habit_Score.date))\
+                .all()
+
+            target_score = Habit_Score.query\
+                .filter(Habit_Score.id == score_id)\
+                .first()
+
+            form = HabitScoreForm(
+                date = target_score.date,
+                score = target_score.score
+            )
+
+            return render_template("habit_score_new.html", form = form, user_habit = user_habit, habit_scores = habit_scores, edit = True, target_score_id = target_score.id)
+
+        else:
+            flash("We were unable to retrieve the requested goal.", "warning")
+            return redirect(url_for("plan_bp.get_plan_home"))
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
 
 @tracking_bp.route("/habit_scores/<int:habit_id>/scores/<int:score_id>/update", methods=["POST"])
-def update_habit_score(habit_id):
-    return redirect(url_for("tracking_bp.get_new_habit_score"))
+def update_habit_score(habit_id, score_id):
+    if g.user:
+        form = HabitScoreForm(obj=request.form)
+
+        user_habit = User_Habit.query\
+            .join(Habit, Habit.id == User_Habit.habit_id)\
+            .add_columns(Habit.title_en, Habit.description_public)\
+            .filter(and_(User_Habit.user_id == g.user.id, User_Habit.id == habit_id))\
+            .first()
+
+        habit_scores = Habit_Score.query\
+            .filter(Habit_Score.habit_id == habit_id)\
+            .order_by(desc(Habit_Score.date))\
+            .all()
+
+        if user_habit and form.validate_on_submit():
+
+            date_check = Habit_Score.query\
+                .join(User_Habit, User_Habit.id == Habit_Score.habit_id)\
+                .filter(and_(User_Habit.user_id == g.user.id, User_Habit.id == habit_id, Habit_Score.date == form.date.data))\
+                .first()
+
+            if not date_check or date_check.id == score_id:
+                target_score = Habit_Score.query\
+                    .filter(Habit_Score.id == score_id)\
+                    .first()
+
+                target_score.date = form.date.data
+                target_score.score = form.score.data
+
+                # Try adding habit score to database
+                try:
+                    db.session.commit()    
+                except Exception as e:
+                    flash("Oops... We were unable to update this habit.  We're looking into it!", "danger")
+                    print(e)
+                    db.session.rollback()
+
+                return redirect(url_for("tracking_bp.get_new_habit_score", habit_id = habit_id))
+            
+            else:
+                flash("An entry already exists for the target date.", "info")
+                db.session.rollback()
+                return render_template("habit_score_new.html", form = form, user_habit = user_habit, habit_scores = habit_scores, edit = True)
+
+        else:
+            return render_template("habit_score_new.html", form = form, user_habit = user_habit, habit_scores = habit_scores, edit = True)
+
+    else:
+        flash("You must be logged in to access that page.", "warning")
+        return redirect(url_for("home_bp.homepage"))
 
 # Delete Habit Score
 @tracking_bp.route("/habit_scores/<int:habit_id>/scores/<int:score_id>/delete", methods=["POST"])
-def delete_habit_score(habit_id):
-    return redirect(url_for("tracking_bp.get_new_habit_score"))
+def delete_habit_score(habit_id, score_id):
+    if g.user:
+
+        user_habit = User_Habit.query\
+            .join(Habit, Habit.id == User_Habit.habit_id)\
+            .add_columns(Habit.title_en, Habit.description_public)\
+            .join(Habit_Score, Habit_Score.habit_id == User_Habit.habit_id)\
+            .add_columns(Habit_Score.id)\
+            .filter(and_(User_Habit.user_id == g.user.id, User_Habit.id == habit_id, Habit_Score.id == score_id))\
+            .first()
+
+        if user_habit:
+            target_score = Habit_Score.query\
+                .filter(Habit_Score.id == score_id)\
+                .first()
+
+            db.session.delete(target_score)
+
+            try:
+                db.session.commit()
+            except Exception as e:
+                flash("An error occured, if this problem persists please contact support", "danger")
+                print(e)
+                db.session.rollback()
+        else:
+            flash("We were unable to find the target score.", "warning")
+
+        return redirect(url_for("tracking_bp.get_new_habit_score", habit_id = habit_id))
+
+    else:
+        flash("Please login to continue.", "warning")
+        return redirect(url_for("home_bp.homepage"))  
 
 
 
+###################################
+# API Calls
+###################################
 
 @tracking_bp.route("/scoring_sys")
 def get_scoring_sys():

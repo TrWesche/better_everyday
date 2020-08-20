@@ -1,62 +1,117 @@
 {% extends 'base.html' %}
 
-{% block page_title %}New Habit Entry{% endblock %}
+{% block page_title %}Habit Tracking{% endblock %}
 
 {% block style_sheets %}
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<link rel="stylesheet" href="/tracking/static/styles_tracking.css">
 {% endblock %}
 
 {% block content %}
 <div class="container">
     <div class="row">
         <div class="col">
-            <h1 class="mt-4 display-3">New Entry {{ user_habit.title_en }}</h1>
+            <h1 class="mt-4 display-3">Habit Scores {{ user_habit.title_en }}</h1>
         </div>
     </div>
 
     <div class="row mt-5">
-        <div class="col">
-            <p>Fill out the form below to add a new entry to your progress log:</p>
+        <div class="col-12 col-xl-5 mx-3">
+            <div class="row mb-3">
+                <h3>Score Log</h3>
+            </div>
+
+            <div class="row scroll_window">
+                <div class="col">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Score Input</th>
+                            <th scope="col">Edit</th>
+                            <th scope="col">Delete</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for score in habit_scores %}
+                        <tr>
+                            <th scope="row">{{ score.date.date() }}</th>
+                            <td>{{score.score}}</td>
+                            <td><a href="{{ url_for('tracking_bp.get_edit_habit_score', habit_id = user_habit.User_Habit.id, score_id = score.id) }}" class="btn btn-info btn-sm"><i class="fas fa-edit"></i></a></td>
+                            <td>
+                                <form action="{{ url_for('tracking_bp.delete_habit_score', habit_id = user_habit.User_Habit.id, score_id = score.id) }}" method="post">
+                                    <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="row mt-2">
-        <div class="col">
-            <form action="{{ url_for('tracking_bp.add_new_habit_score', habit_id = user_habit.User_Habit.id ) }}" method="post">
-                {{ form.hidden_tag() }}
-
-                {% for field in form if field.widget.input_type != 'hidden'%}
-                
-                {% if field.type == "DateField" %}
-                <div class="form-group">
-                    {{ field.label(class_="font-weight-bolder") }}
-                    {{ field(class_="datepicker form-control")}}
-                    {% for error in field.errors %}
-                    <small class="form-text text-danger">
-                    {{error}}
-                    </small>
-                    {% endfor %}
-                </div>
-                
+        <div class="col-12 col-xl-5 mx-3">
+            <div class="row mb-3">
+                {% if edit %}
+                <h3>Edit Score:</h3>
                 {% else %}
-
-                <div class="form-group">
-                    {{ field.label(class_="font-weight-bolder") }}
-                    {{ field(class_="form-control")}}
-                    {% for error in field.errors %}
-                    <small class="form-text text-danger">
-                    {{error}}
-                    </small>
-                    {% endfor %}
-                </div>
-
+                <h3>Add Score:</h3>
                 {% endif %}
+            </div>
 
-                {% endfor %}
+            <div class="row">
+                <div class="col">
+                    {% if edit %}
+                    <form action="{{ url_for('tracking_bp.update_habit_score', habit_id = user_habit.User_Habit.id, score_id = target_score_id ) }}" method="post">
+                    {% else %}
+                    <form action="{{ url_for('tracking_bp.add_new_habit_score', habit_id = user_habit.User_Habit.id ) }}" method="post">
+                    {% endif %}
+                        {{ form.hidden_tag() }}
+        
+                        {% for field in form if field.widget.input_type != 'hidden'%}
+                        
+                        {% if field.type == "DateField" %}
+                        <div class="form-group">
+                            {{ field.label(class_="font-weight-bolder") }}
+                            {{ field(class_="datepicker form-control")}}
+                            {% for error in field.errors %}
+                            <small class="form-text text-danger">
+                            {{error}}
+                            </small>
+                            {% endfor %}
+                        </div>
+                        
+                        {% else %}
+        
+                        <div class="form-group">
+                            {{ field.label(class_="font-weight-bolder") }}
+                            {{ field(class_="form-control")}}
+                            {% for error in field.errors %}
+                            <small class="form-text text-danger">
+                            {{error}}
+                            </small>
+                            {% endfor %}
+                        </div>
+        
+                        {% endif %}
+        
+                        {% endfor %}
+        
+                        <a href="{{ url_for('plan_bp.get_plan_home')}}" class="btn btn-secondary my-2">Cancel</a>
+                        {% if edit %}
+                        <button type="submit" class="btn btn-primary my-2">Update</button>
+                        {% else %}
+                        <button type="submit" class="btn btn-primary my-2">Submit</button>
+                        {% endif %}
+                    </form>
 
-                <a href="{{ url_for('plan_bp.get_plan_home')}}" class="btn btn-secondary my-2">Cancel</a>
-                <button type="submit" class="btn btn-primary my-2">Submit</button>
-            </form>
+                    {% if edit %}
+                    <a href="{{ url_for('tracking_bp.get_new_habit_score', habit_id = user_habit.User_Habit.id )}}" class="btn btn-info my-2 mt-4">Add New</a>
+                    {% endif %}
+                </div>
+            </div>
+
         </div>
     </div>
 
