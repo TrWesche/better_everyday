@@ -17,7 +17,7 @@ from .forms.form_scoring_param import ScoringSystemParamForm
 from .forms.form_goal_score import GoalScoreForm
 from .forms.form_habit_score import HabitScoreForm
 
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 from application import db
 import gviz_api
 
@@ -828,10 +828,7 @@ def get_user_habit_scores():
         habit_id = request.args.get('habit_id')
         qty_days = int(request.args.get('qty_days'))
         
-
-        filter_after = datetime.today() - timedelta(days = qty_days)
-
-        # filter_after = datetime(2020, 8, 3, 13, 39, 13, 288470) - timedelta(days = qty_days)
+        filter_after = datetime.now(timezone.utc) - timedelta(days = qty_days)
 
         score_results = User_Habit.query\
             .join(Habit_Score, User_Habit.id == Habit_Score.habit_id)\
@@ -840,59 +837,133 @@ def get_user_habit_scores():
             .order_by(Habit_Score.date)\
             .all()
 
-        if score_results:
-            scoring_sys = score_results[0].User_Habit.scoring_system_id
+        # NEW
+        target_habit = User_Habit.query\
+            .filter(and_(User_Habit.user_id == g.user.id, User_Habit.id == habit_id))\
+            .first()
 
-            system_parameters = Scoring_System.query\
-                    .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
-                    .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en)\
-                    .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys))\
-                    .order_by(Scoring_System_Params.score_bp)\
-                    .all()
+        # NEW
+        scoring_system_parameters = Scoring_System.query\
+            .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
+            .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en)\
+            .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == target_habit.scoring_system_id))\
+            .order_by(Scoring_System_Params.score_bp)\
+            .all()
 
+        # NEW
+        saved_dates = [result.date.date() for result in score_results]
+        filled_score_results = []
+        
 
-            description = {
-                "date":   ("datetime", "Time Spent"),
-                "score": ("number", "Score"),
-                "score_label":  ("string",'',{'role':'tooltip'})
-                }
+        for day_offset in range(qty_days):
+            search_date = filter_after + timedelta(days = day_offset)
 
-            data = []
-
-            len_param_list = len(system_parameters)
-
-            for result in score_results:
+            if search_date.date() in saved_dates:
+                for result in score_results:
+                    if search_date.date() == result.date.date():
+                        data_point = {
+                            "date": result.date,
+                            "score": result.score
+                        }
+                        filled_score_results.append(data_point)
+            else:
                 data_point = {
-                    "date": result.date,
-                    "score": None,
-                    "score_label": None
+                    "date": search_date,
+                    "score": 0
                 }
+                filled_score_results.append(data_point)
 
-                for idx, param in enumerate(system_parameters):
-                    if result.score <= system_parameters[idx].score_input:
-                        data_point["score"] = param.score_output
-                        data_point["score_label"] = param.name_en
-                        break
-                    elif result.score > system_parameters[idx].score_input and idx == (len_param_list - 1):
-                        data_point["score"] = param.score_output
-                        data_point["score_label"] = param.name_en
-                        break
-                    else:
-                        continue        
+        description = {
+            "date":   ("datetime", "Time Spent"),
+            "score": ("number", "Score"),
+            "score_label":  ("string",'',{'role':'tooltip'})
+            }        
 
-                data.append(data_point)
+        data = []
 
-            data_table = gviz_api.DataTable(description)
-            data_table.LoadData(data)
+        len_param_list = len(scoring_system_parameters)
+
+        for result in filled_score_results:
+            data_point = {
+                "date": result.get('date'),
+                "score": None,
+                "score_label": None
+            }
+
+            for idx, param in enumerate(scoring_system_parameters):
+                if result.get('score') <= scoring_system_parameters[idx].score_input:
+                    data_point["score"] = param.score_output
+                    data_point["score_label"] = param.name_en
+                    break
+                elif result.get('score') > scoring_system_parameters[idx].score_input and idx == (len_param_list - 1):
+                    data_point["score"] = param.score_output
+                    data_point["score_label"] = param.name_en
+                    break
+                else:
+                    continue        
+
+            data.append(data_point)
 
 
-            jsonResponse = data_table.ToJSon(columns_order=("date", "score", "score_label"),
-                                        order_by="date")
+        data_table = gviz_api.DataTable(description)
+        data_table.LoadData(data)
 
-            # print(jsonResponse)
 
-        else:
-            jsonResponse = {'info': 'No data available.'}
+        jsonResponse = data_table.ToJSon(columns_order=("date", "score", "score_label"),
+                                    order_by="date")
+
+
+        # if score_results:
+        #     scoring_sys = score_results[0].User_Habit.scoring_system_id
+
+        #     system_parameters = Scoring_System.query\
+        #             .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
+        #             .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en)\
+        #             .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys))\
+        #             .order_by(Scoring_System_Params.score_bp)\
+        #             .all()
+
+
+        #     description = {
+        #         "date":   ("datetime", "Time Spent"),
+        #         "score": ("number", "Score"),
+        #         "score_label":  ("string",'',{'role':'tooltip'})
+        #         }
+
+        #     data = []
+
+        #     len_param_list = len(system_parameters)
+
+        #     for result in score_results:
+        #         data_point = {
+        #             "date": result.date,
+        #             "score": None,
+        #             "score_label": None
+        #         }
+
+        #         for idx, param in enumerate(system_parameters):
+        #             if result.score <= system_parameters[idx].score_input:
+        #                 data_point["score"] = param.score_output
+        #                 data_point["score_label"] = param.name_en
+        #                 break
+        #             elif result.score > system_parameters[idx].score_input and idx == (len_param_list - 1):
+        #                 data_point["score"] = param.score_output
+        #                 data_point["score_label"] = param.name_en
+        #                 break
+        #             else:
+        #                 continue        
+
+        #         data.append(data_point)
+
+        #     data_table = gviz_api.DataTable(description)
+        #     data_table.LoadData(data)
+
+
+        #     jsonResponse = data_table.ToJSon(columns_order=("date", "score", "score_label"),
+        #                                 order_by="date")
+
+        # else:
+        #     jsonResponse = {'info': 'No data available.'}
 
         return jsonResponse
 
@@ -908,9 +979,7 @@ def get_user_goal_scores():
         qty_days = int(request.args.get('qty_days'))
         
 
-        filter_after = datetime.today() - timedelta(days = qty_days)
-
-        # filter_after = datetime(2020, 8, 3, 13, 39, 13, 288470) - timedelta(days = qty_days)
+        filter_after = datetime.now(timezone.utc) - timedelta(days = qty_days)
 
         score_results = User_Goal.query\
             .join(Goal_Score, User_Goal.id == Goal_Score.goal_id)\
@@ -919,59 +988,139 @@ def get_user_goal_scores():
             .order_by(Goal_Score.date)\
             .all()
 
-        if score_results:
-            scoring_sys = score_results[0].User_Goal.scoring_system_id
+        # NEW
+        target_goal = User_Goal.query\
+            .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id))\
+            .first()
 
-            system_parameters = Scoring_System.query\
-                    .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
-                    .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en)\
-                    .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys))\
-                    .order_by(Scoring_System_Params.score_bp)\
-                    .all()
+        # NEW
+        scoring_system_parameters = Scoring_System.query\
+            .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
+            .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en)\
+            .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == target_goal.scoring_system_id))\
+            .order_by(Scoring_System_Params.score_bp)\
+            .all()
 
+        # NEW
+        saved_dates = [result.date.date() for result in score_results]
+        filled_score_results = []
+        
 
-            description = {
-                "date":   ("datetime", "Time Spent"),
-                "score": ("number", "Score"),
-                "score_label":  ("string",'',{'role':'tooltip'})
-                }
+        for day_offset in range(qty_days):
+            search_date = filter_after + timedelta(days = day_offset)
 
-            data = []
-
-            len_param_list = len(system_parameters)
-
-            for result in score_results:
+            if search_date.date() in saved_dates:
+                for result in score_results:
+                    if search_date.date() == result.date.date():
+                        data_point = {
+                            "date": result.date,
+                            "score": result.score
+                        }
+                        filled_score_results.append(data_point)
+            else:
                 data_point = {
-                    "date": result.date,
-                    "score": None,
-                    "score_label": None
+                    "date": search_date,
+                    "score": 0
                 }
+                filled_score_results.append(data_point)
 
-                for idx, param in enumerate(system_parameters):
-                    if result.score <= system_parameters[idx].score_input:
-                        data_point["score"] = param.score_output
-                        data_point["score_label"] = param.name_en
-                        break
-                    elif result.score > system_parameters[idx].score_input and idx == (len_param_list - 1):
-                        data_point["score"] = param.score_output
-                        data_point["score_label"] = param.name_en
-                        break
-                    else:
-                        continue        
+        description = {
+            "date":   ("datetime", "Time Spent"),
+            "score": ("number", "Score"),
+            "score_label":  ("string",'',{'role':'tooltip'})
+            }        
 
-                data.append(data_point)
+        data = []
 
-            data_table = gviz_api.DataTable(description)
-            data_table.LoadData(data)
+        len_param_list = len(scoring_system_parameters)
+
+        for result in filled_score_results:
+            data_point = {
+                "date": result.get('date'),
+                "score": None,
+                "score_label": None
+            }
+
+            for idx, param in enumerate(scoring_system_parameters):
+                if result.get('score') <= scoring_system_parameters[idx].score_input:
+                    data_point["score"] = param.score_output
+                    data_point["score_label"] = param.name_en
+                    break
+                elif result.get('score') > scoring_system_parameters[idx].score_input and idx == (len_param_list - 1):
+                    data_point["score"] = param.score_output
+                    data_point["score_label"] = param.name_en
+                    break
+                else:
+                    continue        
+
+            data.append(data_point)
 
 
-            jsonResponse = data_table.ToJSon(columns_order=("date", "score", "score_label"),
-                                        order_by="date")
+        data_table = gviz_api.DataTable(description)
+        data_table.LoadData(data)
 
-            # print(jsonResponse)
 
-        else:
-            jsonResponse = {'info': 'No data available.'}
+        jsonResponse = data_table.ToJSon(columns_order=("date", "score", "score_label"),
+                                    order_by="date")
+
+
+
+
+
+
+        # if score_results:
+        #     scoring_sys = score_results[0].User_Goal.scoring_system_id
+
+        #     system_parameters = Scoring_System.query\
+        #             .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
+        #             .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en)\
+        #             .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys))\
+        #             .order_by(Scoring_System_Params.score_bp)\
+        #             .all()
+
+
+        #     description = {
+        #         "date":   ("datetime", "Time Spent"),
+        #         "score": ("number", "Score"),
+        #         "score_label":  ("string",'',{'role':'tooltip'})
+        #         }
+
+        #     data = []
+
+        #     len_param_list = len(system_parameters)
+
+        #     for result in score_results:
+        #         data_point = {
+        #             "date": result.date,
+        #             "score": None,
+        #             "score_label": None
+        #         }
+
+        #         for idx, param in enumerate(system_parameters):
+        #             if result.score <= system_parameters[idx].score_input:
+        #                 data_point["score"] = param.score_output
+        #                 data_point["score_label"] = param.name_en
+        #                 break
+        #             elif result.score > system_parameters[idx].score_input and idx == (len_param_list - 1):
+        #                 data_point["score"] = param.score_output
+        #                 data_point["score_label"] = param.name_en
+        #                 break
+        #             else:
+        #                 continue        
+
+        #         data.append(data_point)
+
+        #     data_table = gviz_api.DataTable(description)
+        #     data_table.LoadData(data)
+
+
+        #     jsonResponse = data_table.ToJSon(columns_order=("date", "score", "score_label"),
+        #                                 order_by="date")
+
+        #     # print(jsonResponse)
+
+        # else:
+        #     jsonResponse = {'info': 'No data available.'}
 
         return jsonResponse
 
