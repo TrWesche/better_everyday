@@ -7,6 +7,9 @@ from .models.model_scoring_system import Scoring_System
 from .models.model_scoring_system_params import Scoring_System_Params
 from .models.model_reminder_schedule import Reminder_Schedule
 
+from ..plan.models.model_user_persona import User_Persona
+from ..plan.models.model_persona import Persona
+
 from ..plan.models.model_user_habit import User_Habit
 from ..plan.models.model_user_goal import User_Goal
 from ..plan.models.model_goal import Goal
@@ -837,12 +840,10 @@ def get_user_habit_scores():
             .order_by(Habit_Score.date)\
             .all()
 
-        # NEW
         target_habit = User_Habit.query\
             .filter(and_(User_Habit.user_id == g.user.id, User_Habit.id == habit_id))\
             .first()
 
-        # NEW
         scoring_system_parameters = Scoring_System.query\
             .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
             .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en)\
@@ -850,7 +851,6 @@ def get_user_habit_scores():
             .order_by(Scoring_System_Params.score_bp)\
             .all()
 
-        # NEW
         saved_dates = [result.date.date() for result in score_results]
         filled_score_results = []
         
@@ -911,59 +911,6 @@ def get_user_habit_scores():
 
         jsonResponse = data_table.ToJSon(columns_order=("date", "score", "score_label"),
                                     order_by="date")
-
-
-        # if score_results:
-        #     scoring_sys = score_results[0].User_Habit.scoring_system_id
-
-        #     system_parameters = Scoring_System.query\
-        #             .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
-        #             .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en)\
-        #             .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys))\
-        #             .order_by(Scoring_System_Params.score_bp)\
-        #             .all()
-
-
-        #     description = {
-        #         "date":   ("datetime", "Time Spent"),
-        #         "score": ("number", "Score"),
-        #         "score_label":  ("string",'',{'role':'tooltip'})
-        #         }
-
-        #     data = []
-
-        #     len_param_list = len(system_parameters)
-
-        #     for result in score_results:
-        #         data_point = {
-        #             "date": result.date,
-        #             "score": None,
-        #             "score_label": None
-        #         }
-
-        #         for idx, param in enumerate(system_parameters):
-        #             if result.score <= system_parameters[idx].score_input:
-        #                 data_point["score"] = param.score_output
-        #                 data_point["score_label"] = param.name_en
-        #                 break
-        #             elif result.score > system_parameters[idx].score_input and idx == (len_param_list - 1):
-        #                 data_point["score"] = param.score_output
-        #                 data_point["score_label"] = param.name_en
-        #                 break
-        #             else:
-        #                 continue        
-
-        #         data.append(data_point)
-
-        #     data_table = gviz_api.DataTable(description)
-        #     data_table.LoadData(data)
-
-
-        #     jsonResponse = data_table.ToJSon(columns_order=("date", "score", "score_label"),
-        #                                 order_by="date")
-
-        # else:
-        #     jsonResponse = {'info': 'No data available.'}
 
         return jsonResponse
 
@@ -988,12 +935,10 @@ def get_user_goal_scores():
             .order_by(Goal_Score.date)\
             .all()
 
-        # NEW
         target_goal = User_Goal.query\
             .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id))\
             .first()
 
-        # NEW
         scoring_system_parameters = Scoring_System.query\
             .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
             .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en)\
@@ -1001,11 +946,9 @@ def get_user_goal_scores():
             .order_by(Scoring_System_Params.score_bp)\
             .all()
 
-        # NEW
         saved_dates = [result.date.date() for result in score_results]
         filled_score_results = []
         
-
         for day_offset in range(qty_days):
             search_date = filter_after + timedelta(days = day_offset)
 
@@ -1064,63 +1007,136 @@ def get_user_goal_scores():
                                     order_by="date")
 
 
+        return jsonResponse
+
+    else:
+        jsonResponse = {'error': 'User must be authenticated to view that page.'}
+        return jsonResponse
+
+def calc_output_score(scoring_system_parameters, score):
+    len_param_list = len(scoring_system_parameters)
+
+    for idx, param in enumerate(scoring_system_parameters):
+        if score <= scoring_system_parameters[idx].score_input:
+            output = param.score_output
+            break
+        elif score > scoring_system_parameters[idx].score_input and idx == (len_param_list - 1):
+            output = param.score_output
+            break
+        else:
+            continue 
+
+    return output
+
+@tracking_bp.route("/api/persona_scores")
+def get_user_persona_scores():
+    if g.user:
+
+        user_persona_id = request.args.get('user_persona_id')
+        qty_days = int(request.args.get('qty_days'))
+
+        filter_after = datetime.now(timezone.utc) - timedelta(days = qty_days)
+
+        target_persona = User_Persona.query\
+            .join(Persona, User_Persona.persona_id == Persona.id)\
+            .add_columns(Persona.title_en)\
+            .filter(and_(User_Persona.id == user_persona_id, User_Persona.user_id == g.user.id)).first()
+
+        if not target_persona:
+            jsonResponse = {'error': 'We were unable to locate data per your request.'}
+            return jsonResponse
+
+        active_habits = User_Persona.query\
+            .join(User_Habit, User_Habit.user_persona_id == User_Persona.id)\
+            .add_columns(User_Habit.id, User_Habit.active, User_Habit.scoring_system_id)\
+            .join(Habit, Habit.id == User_Habit.habit_id)\
+            .add_columns(Habit.title_en)\
+            .filter(and_(User_Persona.id == user_persona_id, User_Persona.user_id == g.user.id, User_Habit.active == True))\
+            .order_by(User_Habit.id)\
+            .all()
 
 
+        active_goals = User_Persona.query\
+            .join(User_Goal, User_Goal.user_persona_id == User_Persona.id)\
+            .add_columns(User_Goal.id, User_Goal.active, User_Goal.scoring_system_id)\
+            .join(Goal, Goal.id == User_Goal.goal_id)\
+            .add_columns(Goal.title_en)\
+            .filter(and_(User_Persona.id == user_persona_id, User_Persona.user_id == g.user.id, User_Goal.active == True))\
+            .order_by(User_Goal.id)\
+            .all()
+
+        
+
+        data_entries = []
+
+        for day_offset in range(qty_days):
+            data_array = [filter_after + timedelta(day_offset)]
+            data_entries.append(data_array)
 
 
-        # if score_results:
-        #     scoring_sys = score_results[0].User_Goal.scoring_system_id
+        column_desc = [('Date', 'datetime')]
 
-        #     system_parameters = Scoring_System.query\
-        #             .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
-        #             .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en)\
-        #             .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys))\
-        #             .order_by(Scoring_System_Params.score_bp)\
-        #             .all()
+        for habit in active_habits:
+            column_desc.append((habit.title_en, 'number'))
 
+            score_results = User_Habit.query\
+                .join(Habit_Score, User_Habit.id == Habit_Score.habit_id)\
+                .add_columns(Habit_Score.date, Habit_Score.score)\
+                .filter(and_(User_Habit.user_id == g.user.id, User_Habit.id == habit.id, Habit_Score.date >= filter_after))\
+                .order_by(Habit_Score.date)\
+                .all()
 
-        #     description = {
-        #         "date":   ("datetime", "Time Spent"),
-        #         "score": ("number", "Score"),
-        #         "score_label":  ("string",'',{'role':'tooltip'})
-        #         }
+            scoring_system_parameters = Scoring_System.query\
+                .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
+                .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en)\
+                .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == habit.scoring_system_id))\
+                .order_by(Scoring_System_Params.score_bp)\
+                .all()            
 
-        #     data = []
+            for entry in data_entries:
+                result_found = False
 
-        #     len_param_list = len(system_parameters)
+                for score in score_results:
+                    if entry[0].date() == score.date.date():
+                        result_found = True
+                        entry.append(calc_output_score(scoring_system_parameters, score.score))
 
-        #     for result in score_results:
-        #         data_point = {
-        #             "date": result.date,
-        #             "score": None,
-        #             "score_label": None
-        #         }
-
-        #         for idx, param in enumerate(system_parameters):
-        #             if result.score <= system_parameters[idx].score_input:
-        #                 data_point["score"] = param.score_output
-        #                 data_point["score_label"] = param.name_en
-        #                 break
-        #             elif result.score > system_parameters[idx].score_input and idx == (len_param_list - 1):
-        #                 data_point["score"] = param.score_output
-        #                 data_point["score_label"] = param.name_en
-        #                 break
-        #             else:
-        #                 continue        
-
-        #         data.append(data_point)
-
-        #     data_table = gviz_api.DataTable(description)
-        #     data_table.LoadData(data)
+                if not result_found:
+                    entry.append(0.0)
 
 
-        #     jsonResponse = data_table.ToJSon(columns_order=("date", "score", "score_label"),
-        #                                 order_by="date")
+        for goal in active_goals:
+            column_desc.append((goal.title_en, 'number'))
 
-        #     # print(jsonResponse)
+            score_results = User_Goal.query\
+                .join(Goal_Score, User_Goal.id == Goal_Score.goal_id)\
+                .add_columns(Goal_Score.date, Goal_Score.score)\
+                .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal.id, Goal_Score.date >= filter_after))\
+                .order_by(Goal_Score.date)\
+                .all()
 
-        # else:
-        #     jsonResponse = {'info': 'No data available.'}
+            scoring_system_parameters = Scoring_System.query\
+                .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
+                .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en)\
+                .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == goal.scoring_system_id))\
+                .order_by(Scoring_System_Params.score_bp)\
+                .all()            
+
+            for entry in data_entries:
+                result_found = False
+
+                for score in score_results:
+                    if entry[0].date() == score.date.date():
+                        result_found = True
+                        entry.append(calc_output_score(scoring_system_parameters, score.score))
+
+                if not result_found:
+                    entry.append(0.0)
+
+        data_table = gviz_api.DataTable(column_desc)
+        data_table.AppendData(data_entries)
+
+        jsonResponse = data_table.ToJSon()
 
         return jsonResponse
 
@@ -1128,5 +1144,9 @@ def get_user_goal_scores():
         jsonResponse = {'error': 'User must be authenticated to view that page.'}
         return jsonResponse
 
-
-
+# TODO:
+# Area Charts for Persona graph
+# https://developers.google.com/chart/interactive/docs/gallery/areachart
+# Partner JS file will also be necessary
+# - One for My Plan Page (minimized details)
+# - One for Homepage (more details)

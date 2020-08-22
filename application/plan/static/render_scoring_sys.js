@@ -1,5 +1,7 @@
 const dataSrcRoot = `${window.location.origin}/tracking/scoring_sys` //"http://localhost:5000/tracking/scoring_sys"
 
+// TODO: Data caching for responsive website
+
 // Load the Visualization API and the corechart package.
 google.charts.load('current', {'packages':['corechart']});
 
@@ -20,7 +22,6 @@ async function getChartData(system) {
     return res;
 }
 
-//  TODO: The stepchart display is not working currently.
 async function drawStepChart(system, target_div, chart_title) {
     const jsonData = await getChartData(system)
     

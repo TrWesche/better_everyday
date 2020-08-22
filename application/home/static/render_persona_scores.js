@@ -1,4 +1,4 @@
-const dataSrcRoot = `${window.location.origin}/tracking/user_habit_scores` //"http://localhost:5000/tracking/scoring_sys"
+const dataSrcRoot = `${window.location.origin}/tracking/api/persona_scores` //"http://localhost:5000/tracking/scoring_sys"
 
 // TODO: Data caching for responsive website
 
@@ -8,28 +8,28 @@ google.charts.load('current', {'packages':['corechart']});
 google.charts.setOnLoadCallback(drawChart)
 
 function drawChart() {
-    const stepchart_objs = $(".gviz_user_scores_h")
+    const stepchart_objs = $(".gviz_persona_scores")
 
     for (let index = 0; index < stepchart_objs.length; index++) {
         const element = stepchart_objs[index];
 
-        drawStepChart(element.dataset.habit_id, element.dataset.qty_days, element.id)
+        drawStepChart(element.dataset.user_persona_id, element.dataset.qty_days, element.id)
     }
 }
 
-async function getChartData(habit_id, qty_days) {
-    const res = await axios.get(`${dataSrcRoot}`, { params: {habit_id, qty_days} });
+async function getChartData(user_persona_id, qty_days) {
+    const res = await axios.get(`${dataSrcRoot}`, { params: {user_persona_id, qty_days} });
     return res;
 }
 
-async function drawStepChart(habit_id, qty_days, target_div) {
-    const jsonData = await getChartData(habit_id, qty_days)
-    
+async function drawStepChart(user_persona_id, qty_days, target_div) {
+    const jsonData = await getChartData(user_persona_id, qty_days)
+
     // Create our data table out of JSON data loaded from server.
     var data = new google.visualization.DataTable(jsonData.data);
 
     // Instantiate and draw our chart, passing in some options.
-    var chart = new google.visualization.LineChart(document.getElementById(target_div));
+    var chart = new google.visualization.AreaChart(document.getElementById(target_div));
 
     var options = {
         hAxis: {
@@ -43,7 +43,7 @@ async function drawStepChart(habit_id, qty_days, target_div) {
             title: 'Score',
             minValue: 0
         },
-        legend: { position: 'none' }
+        isStacked: true
     };
 
     chart.draw(data, options);

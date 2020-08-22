@@ -20,7 +20,6 @@ async function getChartData(system) {
     return res;
 }
 
-//  TODO: The stepchart display is not working currently.
 async function drawStepChart(system, target_div, chart_title) {
     const jsonData = await getChartData(system)
     

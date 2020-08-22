@@ -14,10 +14,25 @@
 
 <div class="container mt-5">
 
+    {% if not g.user %}
     <div class="row">
         <p>Under construction!</p>
     </div>
+    {% else %}
+    <div class="row">
+        <div class="col gviz_persona_scores" id="gviz_persona_scores1" data-user_persona_id="1" data-qty_days="30">
+
+        </div>
+    </div>
+    {% endif %}
+
 
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://unpkg.com/axios/dist/axios.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="{{url_for('.static', filename='render_persona_scores.js')}}"></script>
 {% endblock %}

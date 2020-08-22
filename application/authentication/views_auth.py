@@ -43,6 +43,8 @@ def do_logout():
 
 @auth_bp.route("/register", methods=["GET", "POST"])
 def user_registration():
+    # TODO: Add sample data on account creation
+
 
     form = UserRegisterForm(request.form)
 
@@ -128,5 +130,8 @@ def user_logout():
     flash("See you next time!", "success")
 
     return redirect(url_for('home_bp.homepage'))
+
+
+# TODO: User Profile Page
 
 ## TODO: Optional - Change Password Route

@@ -1,5 +1,7 @@
 const dataSrcRoot = `${window.location.origin}/tracking/user_goal_scores` //"http://localhost:5000/tracking/scoring_sys"
 
+// TODO: Data caching for responsive website
+
 // Load the Visualization API and the corechart package.
 google.charts.load('current', {'packages':['corechart']});
 
