@@ -2,32 +2,105 @@
 
 {% block page_title %}Better Everyday{% endblock %}
 
+{% block style_sheets %}
+<link rel="stylesheet" href="{{url_for('.static', filename='styles_home.css')}}">
+{% endblock %}
+
 {% block content %}
 <div class="container">
     {% if not g.user %}
-    <h1 class="mt-4 display-3">Welcome to Better Everyday!</h1>
-    {% else %}
-    <h1 class="mt-4 display-3">Welcome Back {{ g.user.first_name }}!</h1>
-    {% endif %}
-    <img src="{{ image_url }}" class="img-fluid" alt="Responsive image">
-</div>
+    <h1 class="mt-4 display-4">Welcome Visitor!</h1>
 
-<div class="container mt-5">
+    <div id="carouselWelcomePage" class="carousel slide carousel-fade mt-5" data-ride="carousel">
+        <div class="carousel-inner">
+            {% set ns = namespace(first_run=true) %}
 
-    {% if not g.user %}
-    <div class="row">
-        <p>Under construction!</p>
-    </div>
-    {% else %}
-    <div class="row">
-        <div class="col gviz_persona_scores" id="gviz_persona_scores1" data-user_persona_id="1" data-qty_days="30">
+            {% for image in carousel_image_list %}
+
+            {% if ns.first_run %}
+            <div class="carousel-item active">
+            {% set ns.first_run = false %}
+            {% else %}
+            <div class="carousel-item">
+            {% endif %}
+                <img src="{{ image.landscape_image_url }}" class="d-block w-100" alt="">
+                <div class="carousel-caption d-none d-md-block">
+                    <h3>{{ image.carousel_text }}</h3>
+                </div>
+            </div>
+            {% endfor %}
 
         </div>
     </div>
+
+    <h6><a href="https://www.pexels.com">Photos provided by Pexels</a></h6>
+
+    {% else %}
+    <h1 class="mt-4 display-3">Welcome Back {{ g.user.first_name }}!</h1>
     {% endif %}
 
-
+    {% if not g.user %}
+    <div class="row">
+        <p>Please Login to Continue</p>
+    </div>
+    {% endif %}
 </div>
+
+
+{% if g.user %}
+
+{% for user_persona in user_personas %}
+<div class="container mt-5 border">
+    <div class="row ml-2">
+        <h4 class="display-4">{{ user_persona.title_en }}</h4>
+
+    </div>
+
+    <div class="row border-top">
+        <div class="col-12 col-xl-8 gviz_persona_scores" id="gviz_persona_scores{{ user_persona.User_Persona.id }}" data-user_persona_id="{{ user_persona.User_Persona.id }}" data-qty_days="30">
+
+        </div>
+
+        <div class="col-12 col-xl-4 persona_options mt-4">
+            <div class="row h-75 align-items-start">
+                <div class="col">
+                    <div class="row">
+                        <h5 class="font-weight-bolder"> <i class="fas fa-stopwatch fa-lg text-muted my-2"></i> Total Time Spent</h5>
+                    </div>
+                    
+                    <div class="row mt-1">
+                        <div class="persona_time_total text-success mx-2" id="persona_title_total{{ user_persona.User_Persona.id }}" data-user_persona_id="{{ user_persona.User_Persona.id }}">
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row h-25 align-items-end">
+                <div class="col">
+                    <a class="btn btn-primary btn-block" data-toggle="collapse" href="#trackCollapseList{{ user_persona.User_Persona.id }}" role="button" aria-expanded="false" aria-controls="trackCollapseList{{ user_persona.User_Persona.id }}">Track Progress</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row my-3">
+        <div class="col">
+            <div class="collapse" id="trackCollapseList{{ user_persona.User_Persona.id }}">
+                <div class="card card-body">
+                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+{% endfor %}
+
+{% endif %}
+
+
+
 
 {% endblock %}
 
@@ -35,4 +108,5 @@
     <script src="https://unpkg.com/axios/dist/axios.js"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript" src="{{url_for('.static', filename='render_persona_scores.js')}}"></script>
+    <script type="text/javascript" src="{{url_for('.static', filename='get_persona_total_mins.js')}}"></script>
 {% endblock %}

@@ -43,7 +43,10 @@ async function drawStepChart(user_persona_id, qty_days, target_div) {
             title: 'Score',
             minValue: 0
         },
-        isStacked: true
+        isStacked: true,
+        legend: {
+            position: 'bottom'
+        }
     };
 
     chart.draw(data, options);

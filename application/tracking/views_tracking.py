@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, redirect, flash, request, session, g, jsonify, url_for
 from flask import current_app as app
-from sqlalchemy import exc, and_, desc
+from sqlalchemy import exc, and_, desc, func
 from .models.model_habit_score import Habit_Score
 from .models.model_goal_score import Goal_Score
 from .models.model_scoring_system import Scoring_System
@@ -1013,6 +1013,7 @@ def get_user_goal_scores():
         jsonResponse = {'error': 'User must be authenticated to view that page.'}
         return jsonResponse
 
+
 def calc_output_score(scoring_system_parameters, score):
     len_param_list = len(scoring_system_parameters)
 
@@ -1143,6 +1144,59 @@ def get_user_persona_scores():
     else:
         jsonResponse = {'error': 'User must be authenticated to view that page.'}
         return jsonResponse
+
+
+@tracking_bp.route("/api/persona_scores_total_mins")
+def get_user_persona_scores_total_mins():
+    if g.user:
+
+        user_persona_id = request.args.get('user_persona_id')
+
+        target_persona = User_Persona.query\
+            .join(Persona, User_Persona.persona_id == Persona.id)\
+            .add_columns(Persona.title_en)\
+            .filter(and_(User_Persona.id == user_persona_id, User_Persona.user_id == g.user.id)).first()
+
+        if not target_persona:
+            jsonResponse = {'error': 'We were unable to locate data per your request.'}
+            return jsonResponse
+
+        consolidated_habits = User_Persona.query\
+            .with_entities(User_Persona.id, func.sum(Habit_Score.score))\
+            .join(User_Habit, User_Habit.user_persona_id == User_Persona.id)\
+            .join(Habit, Habit.id == User_Habit.habit_id)\
+            .join(Habit_Score, Habit_Score.habit_id == User_Habit.id)\
+            .group_by(User_Persona.id)\
+            .filter(and_(User_Persona.id == user_persona_id, User_Persona.user_id == g.user.id))\
+            .all()
+        
+        consolidated_goals = User_Persona.query\
+            .with_entities(User_Persona.id, func.sum(Goal_Score.score))\
+            .join(User_Goal, User_Goal.user_persona_id == User_Persona.id)\
+            .join(Goal, Goal.id == User_Goal.goal_id)\
+            .join(Goal_Score, Goal_Score.goal_id == User_Goal.id)\
+            .group_by(User_Persona.id)\
+            .filter(and_(User_Persona.id == user_persona_id, User_Persona.user_id == g.user.id))\
+            .all()
+
+        total_mins = 0
+
+        if consolidated_goals and consolidated_habits:
+            total_mins = consolidated_habits[0][1] + consolidated_goals[0][1]
+        elif consolidated_habits:
+            total_mins = consolidated_habits[0][1]
+        elif consolidated_goals:
+            total_mins = consolidated_goals[0][1]
+
+        jsonResponse = {'total_mins': total_mins}
+
+        return jsonResponse
+
+    else:
+        jsonResponse = {'error': 'User must be authenticated to view that page.'}
+        return jsonResponse
+
+
 
 # TODO:
 # Area Charts for Persona graph
