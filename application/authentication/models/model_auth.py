@@ -17,8 +17,6 @@ class Authentication(db.Model):
 
     @classmethod
     def register(cls, username, password):
-        print(password)
-
         hashed = bcrypt.generate_password_hash(password)
         hashed_utf8 = hashed.decode("utf8")
 

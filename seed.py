@@ -112,7 +112,7 @@ with app.app_context():
         user_id = u1.id,
         title_en = "User1 US Grades System 1",
         description = "US Grading System 1",
-        public = True
+        public = False
     )
 
     score2 = Scoring_System(

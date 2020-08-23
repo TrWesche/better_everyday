@@ -8,6 +8,8 @@ from ..user.models.model_user import User
 from .forms.form_register import UserRegisterForm
 from .forms.form_login import UserLoginForm
 
+from ..services.sample_gen.generator_main import generateSampleData
+
 from application import db
 
 
@@ -43,9 +45,6 @@ def do_logout():
 
 @auth_bp.route("/register", methods=["GET", "POST"])
 def user_registration():
-    # TODO: Add sample data on account creation
-
-
     form = UserRegisterForm(request.form)
 
     login_user = False
@@ -88,9 +87,14 @@ def user_registration():
             db.session.commit()
 
     if login_user:
+        try:
+            generateSampleData(user.id)
+        except:
+            print("Failed to add sample data")
+
         do_login(user)
-        print("Error during add to session")
-        return redirect(url_for('user_bp.get_user_list'))
+
+        return redirect(url_for('home_bp.homepage'))
     else:
         return render_template("user_register.html", form=form)
 
@@ -131,7 +135,5 @@ def user_logout():
 
     return redirect(url_for('home_bp.homepage'))
 
-
-# TODO: User Profile Page
 
 ## TODO: Optional - Change Password Route
