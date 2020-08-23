@@ -49,15 +49,15 @@
 
 {% if g.user %}
 
-{% for user_persona in user_personas %}
+{% for user_persona in persona_render_list %}
 <div class="container mt-5 border">
     <div class="row ml-2">
-        <h4 class="display-4">{{ user_persona.title_en }}</h4>
+        <h4 class="display-4">{{ user_persona.persona_title }}</h4>
 
     </div>
 
     <div class="row border-top">
-        <div class="col-12 col-xl-8 gviz_persona_scores" id="gviz_persona_scores{{ user_persona.User_Persona.id }}" data-user_persona_id="{{ user_persona.User_Persona.id }}" data-qty_days="30">
+        <div class="col-12 col-xl-8 gviz_persona_scores" id="gviz_persona_scores{{ user_persona.id }}" data-user_persona_id="{{ user_persona.id }}" data-qty_days="30">
 
         </div>
 
@@ -69,7 +69,7 @@
                     </div>
                     
                     <div class="row mt-1">
-                        <div class="persona_time_total text-success mx-2" id="persona_title_total{{ user_persona.User_Persona.id }}" data-user_persona_id="{{ user_persona.User_Persona.id }}">
+                        <div class="persona_time_total text-success mx-2" id="persona_title_total{{ user_persona.id }}" data-user_persona_id="{{ user_persona.id }}">
                             
                         </div>
                     </div>
@@ -78,7 +78,7 @@
 
             <div class="row h-25 align-items-end">
                 <div class="col">
-                    <a class="btn btn-primary btn-block" data-toggle="collapse" href="#trackCollapseList{{ user_persona.User_Persona.id }}" role="button" aria-expanded="false" aria-controls="trackCollapseList{{ user_persona.User_Persona.id }}">Track Progress</a>
+                    <a class="btn btn-primary btn-block" data-toggle="collapse" href="#trackCollapseList{{ user_persona.id }}" role="button" aria-expanded="false" aria-controls="trackCollapseList{{ user_persona.id }}">Track Progress</a>
                 </div>
             </div>
         </div>
@@ -86,9 +86,15 @@
 
     <div class="row my-3">
         <div class="col">
-            <div class="collapse" id="trackCollapseList{{ user_persona.User_Persona.id }}">
-                <div class="card card-body">
-                    Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident.
+            <div class="collapse" id="trackCollapseList{{ user_persona.id }}">
+                <div class="border py-2">
+                    {% for habit in user_persona.linked_habits %}
+                    <a href="{{ url_for('tracking_bp.get_new_habit_score', habit_id = habit.id) }}" class="btn btn-primary mx-2">{{ habit.title }}</a>
+                    {% endfor %}
+
+                    {% for goal in user_persona.linked_goals %}
+                    <a href="{{ url_for('tracking_bp.get_new_goal_score', goal_id = goal.id) }}" class="btn btn-primary mx-2">{{ goal.title }}</a>
+                    {% endfor %}
                 </div>
             </div>
         </div>
