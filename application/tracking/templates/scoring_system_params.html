@@ -22,9 +22,9 @@
             <table class="table">
                 <thead>
                     <tr>
-                        <th scope="col">Score Input</th>
-                        <th scope="col">Score Output</th>
-                        <th scope="col">Description</th>
+                        <th scope="col">Time Spent (mins)</th>
+                        <th scope="col">Calculated Score</th>
+                        <th scope="col">Score Label</th>
                         <th scope="col"></th>
                         <th scope="col"></th>
                     </tr>
@@ -80,7 +80,7 @@
 
                 <div class="form-group">
                     {{ field.label(class_="font-weight-bolder") }}
-                    {{ field(class_="form-control")}}
+                    {{ field(class_="form-control", data_toggle='tooltip', title=field.description)}}
                     {% for error in field.errors %}
                     <small class="form-text text-danger">
                     {{error}}
