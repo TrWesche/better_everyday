@@ -268,7 +268,7 @@ def delete_persona(persona_id):
     if g.user:
 
         target_user_persona = User_Persona.query\
-            .filter(and_(User_Persona.user_id == g.user.id, User_Persona.persona_id == persona_id)).first()
+            .filter(and_(User_Persona.user_id == g.user.id, User_Persona.id == persona_id)).first()
 
         if target_user_persona:
             db.session.delete(target_user_persona)
@@ -303,7 +303,7 @@ def get_new_habit():
             .add_columns(Persona.id, Persona.title_en)\
             .filter(User_Persona.user_id == g.user.id).all()
 
-        persona_list = [(persona.id, persona.title_en) for persona in user_personas]
+        persona_list = [(persona.User_Persona.id, persona.title_en) for persona in user_personas]
 
         user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
         scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
@@ -330,7 +330,8 @@ def add_user_habit():
     form = UserHabitForm(request.form)
 
     user_personas = User_Persona.query.filter(User_Persona.user_id == g.user.id).all()
-    persona_list = [(persona.persona_id, "p") for persona in user_personas] # This works becuase the validate_on_submit only checks the id (first) value of the tuple
+    persona_list = [(persona.id, "p") for persona in user_personas]
+    # persona_list = [(persona.persona_id, "p") for persona in user_personas] # This works becuase the validate_on_submit only checks the id (first) value of the tuple
     form.persona.choices = persona_list
 
     user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
@@ -344,7 +345,8 @@ def add_user_habit():
 
     if form.validate_on_submit():
         target_habit = Habit.query.filter(Habit.title_en == form.title.data.lower()).first()
-        target_persona = Persona.query.filter(Persona.id == form.persona.data).first()
+        # target_persona = Persona.query.filter(Persona.id == form.persona.data).first()
+        target_persona = User_Persona.query.filter(User_Persona.id == form.persona.data).first()
 
         if not target_habit:
             target_habit = Habit(title_en = form.title.data.lower())
@@ -385,6 +387,10 @@ def add_user_habit():
             db.session.rollback()
             return redirect(url_for("plan_bp.get_new_habit"))
 
+    else:
+        return render_template("plan_new_habit.html",
+                user_habit_form=form)
+
     return redirect(url_for("plan_bp.get_plan_home"))
 
 # Update Habit
@@ -405,7 +411,7 @@ def get_edit_habit(habit_id):
                 .add_columns(Persona.id, Persona.title_en)\
                 .filter(User_Persona.user_id == g.user.id).all()
 
-            persona_list = [(persona.id, persona.title_en) for persona in user_personas]
+            persona_list = [(persona.User_Persona.id, persona.title_en) for persona in user_personas]
 
             # Retrieve & Create list of valid scoring systems for the logged in user in Tuple Format (id, display_text)
             user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
@@ -456,7 +462,7 @@ def update_habit(habit_id):
             # Retrieve & Create list of valid personas for the logged in user in Tuple Format (id, text)
             # Text is not being validated here, only id number is checked hense text is not dynamically loaded
             user_personas = User_Persona.query.filter(User_Persona.user_id == g.user.id).all()
-            persona_list = [(persona.persona_id, "p") for persona in user_personas] # This works becuase the validate_on_submit only checks the id (first) value of the tuple
+            persona_list = [(persona.id, "p") for persona in user_personas] # This works becuase the validate_on_submit only checks the id (first) value of the tuple
             form.persona.choices = persona_list
 
             # Retrieve & Create list of valid scoring systems for the logged in user in Tuple Format (id, text)
@@ -473,7 +479,7 @@ def update_habit(habit_id):
 
             if form.validate_on_submit():
                 target_habit = Habit.query.filter(Habit.title_en == form.title.data.lower()).first()
-                target_persona = Persona.query.filter(Persona.id == form.persona.data).first()
+                target_persona = User_Persona.query.filter(User_Persona.id == form.persona.data).first()
 
                 if not target_habit:
                     target_habit = Habit(title_en = form.title.data.lower())
@@ -497,13 +503,17 @@ def update_habit(habit_id):
 
                 try:
                     db.session.commit()
+                    return redirect(url_for("plan_bp.get_plan_home"))
                 except Exception as e:
                     flash("Error: Unable to update user habit", "danger")
                     print(e)
                     db.session.rollback()
                     return redirect(url_for("plan_bp.get_edit_habit"))
-
-            return redirect(url_for("plan_bp.get_plan_home"))
+            
+            else :
+                return render_template("plan_edit_habit.html",
+                    user_habit_form=form, habit_id=habit_id)
+            
 
         else:
             flash("You don't have permission to do that.", "warning")
@@ -554,7 +564,7 @@ def get_new_goal():
             .add_columns(Persona.id, Persona.title_en)\
             .filter(User_Persona.user_id == g.user.id).all()
 
-        persona_list = [(persona.id, persona.title_en) for persona in user_personas]
+        persona_list = [(persona.User_Persona.id, persona.title_en) for persona in user_personas]
 
         user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
         scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
@@ -579,7 +589,7 @@ def add_user_goal():
     form = UserGoalForm(request.form)
 
     user_personas = User_Persona.query.filter(User_Persona.user_id == g.user.id).all()
-    persona_list = [(persona.persona_id, "p") for persona in user_personas] # This works becuase the validate_on_submit only checks the id part of the tuple
+    persona_list = [(persona.id, "p") for persona in user_personas] # This works becuase the validate_on_submit only checks the id part of the tuple
     form.persona.choices = persona_list
 
     user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
@@ -592,7 +602,7 @@ def add_user_goal():
 
     if form.validate_on_submit():
         target_goal = Goal.query.filter(Goal.title_en == form.title.data.lower()).first()
-        target_persona = Persona.query.filter(Persona.id == form.persona.data).first()
+        target_persona = User_Persona.query.filter(User_Persona.id == form.persona.data).first()
 
         if not target_goal:
             target_goal = Goal(title_en = form.title.data.lower())
@@ -654,7 +664,7 @@ def get_edit_goal(goal_id):
                 .add_columns(Persona.id, Persona.title_en)\
                 .filter(User_Persona.user_id == g.user.id).all()
 
-            persona_list = [(persona.id, persona.title_en) for persona in user_personas]
+            persona_list = [(persona.User_Persona.id, persona.title_en) for persona in user_personas]
 
             # Retrieve & Create list of valid scoring systems for the logged in user in Tuple Format (id, display_text)
             user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
@@ -705,7 +715,7 @@ def update_goal(goal_id):
             # Retrieve & Create list of valid personas for the logged in user in Tuple Format (id, text)
             # Text is not being validated here, only id number is checked hense text is not dynamically loaded
             user_personas = User_Persona.query.filter(User_Persona.user_id == g.user.id).all()
-            persona_list = [(persona.persona_id, "p") for persona in user_personas] # This works becuase the validate_on_submit only checks the id (first) value of the tuple
+            persona_list = [(persona.id, "p") for persona in user_personas] # This works becuase the validate_on_submit only checks the id (first) value of the tuple
             form.persona.choices = persona_list
 
             # Retrieve & Create list of valid scoring systems for the logged in user in Tuple Format (id, text)
@@ -722,7 +732,7 @@ def update_goal(goal_id):
 
             if form.validate_on_submit():
                 target_goal = Goal.query.filter(Goal.title_en == form.title.data.lower()).first()
-                target_persona = Persona.query.filter(Persona.id == form.persona.data).first()
+                target_persona = User_Persona.query.filter(User_Persona.id == form.persona.data).first()
 
                 if not target_goal:
                     target_goal = Goal(title_en = form.title.data.lower())
@@ -741,18 +751,20 @@ def update_goal(goal_id):
                 target_user_goal.user_persona_id = target_persona.id
                 target_user_goal.scoring_system_id = form.scoring_system_id.data
                 # target_user_goal.schedule_id = form.schedule_id.data
-                target_user_goal.habit_id = target_goal.id
+                target_user_goal.goal_id = target_goal.id
                 target_user_goal.description_private = form.description.data
 
                 try:
                     db.session.commit()
+                    return redirect(url_for("plan_bp.get_plan_home"))
                 except Exception as e:
                     flash("Error: Unable to update user goal", "danger")
                     print(e)
                     db.session.rollback()
                     return redirect(url_for("plan_bp.get_edit_goal"))
-
-            return redirect(url_for("plan_bp.get_plan_home"))
+            else:
+                return render_template("plan_edit_goal.html",
+                        user_goal_form=form, goal_id=goal_id)
 
         else:
             flash("You don't have permission to do that.", "warning")
