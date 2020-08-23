@@ -107,7 +107,7 @@ def get_plan_home():
         if user_personas:
             for persona in user_personas:
                 append_obj = {}
-                append_obj["user_id"] = persona.user_id
+                append_obj["id"] = persona.User_Persona.id
                 append_obj["persona_id"] = persona.User_Persona.persona_id
                 append_obj["persona_title"] = persona.title_en
                 append_obj["description_private"] = persona.User_Persona.description_private

@@ -15,7 +15,6 @@ user_bp = Blueprint(
 @user_bp.route("/", methods=["GET"])
 def get_user_list():   
     args = request.args
-    print(args)
     fields = ['username', 'first_name']
 
     if "username" in args:
@@ -23,8 +22,6 @@ def get_user_list():
         users = db.session.query(User).filter(User.username.like(f"%{username}%")).options(load_only(*fields)).all()
     else:
         users = db.session.query(User).options(load_only(*fields)).all()
-
-    print(users)
 
     return render_template("user_all.html", user_list = users)
 

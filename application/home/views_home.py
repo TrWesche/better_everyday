@@ -82,14 +82,7 @@ def homepage():
         }
     carousel_image_list.append(carousel_obj)
 
-
     if g.user:
-        # user_personas = User_Persona.query\
-        #     .join(Persona, User_Persona.persona_id == Persona.id)\
-        #     .add_columns(Persona.title_en)\
-        #     .filter(and_(User_Persona.user_id == g.user.id)).all()
-
-
         user_personas = User_Persona.query\
             .join(Persona, User_Persona.persona_id == Persona.id)\
             .add_columns(User_Persona.user_id, Persona.title_en, Persona.description_public)\
@@ -144,14 +137,4 @@ def homepage():
 
         return render_template('home.html', carousel_image_list = carousel_image_list, user_personas = user_personas, persona_render_list = persona_render_list)
 
-
     return render_template('home.html', carousel_image_list = carousel_image_list)
-
-# TODO:
-# Upgrade homepage on user login to bring up dashboard with Persona area charts with data for
-# each habit and goal which is linked to that certain persona as an individual layer of the chart.
-# 
-# Additionally under each chart will be a collapsable section where links for logging scores for each of
-# the Persona's linked habits will be provided
-#
-# Additional metrics could be Total Time Spent on the Persona, Average Daily Activity, Average Activity per Day of the Week, etc.

@@ -20,14 +20,12 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-12 col-lg-6 mt-4">
-                        <h5>Activity</h5>
-                        <p>Chart of Activity</p>
-                        <br>
-                        <p>Over the Last 7 Days</p>
+                    <div class="col-12 col-lg-6 col-xl-5 mt-4 mx-1">
+                        <h5>Activity History (7 days)</h5>
+                        <div class="gviz_user_scores_p" id="gviz_user_scoresp{{ persona.id }}" data-user_persona_id="{{ persona.id }}" data-qty_days="7"></div>
                     </div>
                     
-                    <div class="col-12 col-md-6 col-lg-3 mt-4">
+                    <div class="col-12 col-lg-6 col-xl-3 mt-4 mx-1">
                         <h5>Linked Habits</h5>
                         {% if persona.linked_habits %}
                         
@@ -44,7 +42,7 @@
                         {% endif %}
                     </div>
 
-                    <div class="col-12 col-md-6 col-lg-3 mt-4">
+                    <div class="col-12 col-lg-6 col-xl-3 mt-4 mx-1">
                         <h5>Linked Goals</h5>
                         {% if persona.linked_goals %}
                         
@@ -64,8 +62,8 @@
                 </div>
 
                 <div class="row mt-4 justify-content-center">
-                    <a href="{{ url_for('plan_bp.get_edit_persona', persona_id = persona.persona_id) }}" class="btn btn-primary mx-2">Edit Persona</a>
-                    <form action="{{ url_for('plan_bp.delete_persona', persona_id = persona.persona_id) }}" method="post">
+                    <a href="{{ url_for('plan_bp.get_edit_persona', persona_id = persona.id) }}" class="btn btn-primary mx-2">Edit Persona</a>
+                    <form action="{{ url_for('plan_bp.delete_persona', persona_id = persona.id) }}" method="post">
                         <button type="submit" class="btn btn-danger mx-2">Delete Persona</button>
                     </form>      
                 </div>

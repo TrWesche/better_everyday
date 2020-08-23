@@ -40,8 +40,26 @@
     {% endif %}
 
     {% if not g.user %}
-    <div class="row">
-        <p>Please Login to Continue</p>
+    <div class="row mt-5">
+        <h5>If you would like to preview system functionality please login with the following accounts:</h5>
+        <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Username</th>
+                <th scope="col">Password</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>testuser1</td>
+                <td>password</td>
+              </tr>
+              <tr>
+                <td>testuser2</td>
+                <td>password</td>
+              </tr>
+            </tbody>
+          </table>
     </div>
     {% endif %}
 </div>
@@ -50,7 +68,7 @@
 {% if g.user %}
 
 {% for user_persona in persona_render_list %}
-<div class="container mt-5 border">
+<div class="container mt-5 border rounded">
     <div class="row ml-2">
         <h4 class="display-4">{{ user_persona.persona_title }}</h4>
 
