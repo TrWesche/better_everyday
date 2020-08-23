@@ -1,4 +1,4 @@
-const dataSrcRoot = `${window.location.origin}/tracking/user_scores` //"http://localhost:5000/tracking/scoring_sys"
+const dataSrcRoot = `${window.location.origin}/tracking/user_scores`
 
 // Load the Visualization API and the corechart package.
 google.charts.load('current', {'packages':['corechart']});

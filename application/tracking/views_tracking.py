@@ -31,22 +31,44 @@ tracking_bp = Blueprint(
     static_folder='static'
 )
 
+msg_not_logged_in = "Please login to continue."
+msg_not_authorized = "You are not authorized to view that resource."
+
+
+def query_one_scoring_sys(user_id, scoring_sys_id):
+    query_result = Scoring_System.query\
+            .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys_id)).first()
+    return query_result
+
+# def query_scoring_sys_params(user_id, scoring_sys_id):
+#     query_result = Scoring_System.query\
+#             .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
+#             .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en,  Scoring_System_Params.id)\
+#             .filter(and_(Scoring_System.user_id == user_id, Scoring_System.id == scoring_sys_id))\
+#             .order_by(Scoring_System_Params.score_bp)\
+#             .all()
+#     return query_result
+
+def query_scoring_sys_params(user_id, scoring_sys_id):
+    query_result = Scoring_System_Params.query.filter(Scoring_System_Params.scoring_system_id == scoring_sys_id)
+    return query_result
+
+
 @tracking_bp.route("/", methods=["GET"])
 def get_tracking_home():
-
-    if g.user:
-        scoring_systems = Scoring_System.query.filter(Scoring_System.user_id == g.user.id).all()
-
-        # TODO: Implement button disable if there is an associated habit or goal
-        # associated_habits = User_Habit.query\
-        #     .filter(User_Habit.scoring_system_id == scoring_sys.id).all()
-
-        # associated_goals = User_Goal.query\
-        #     .filter(User_Goal.scoring_system_id == scoring_sys.id).all()
-
-    else:
-        flash("Please login to continue.", "warning")
+    # Check for login
+    if not g.user:
+        flash(msg_not_logged_in, "warning")
         return redirect(url_for("home_bp.homepage"))
+
+    scoring_systems = Scoring_System.query.filter(Scoring_System.user_id == g.user.id).all()
+
+    # FUTURE: Implement button disable if there is an associated habit or goal
+    # associated_habits = User_Habit.query\
+    #     .filter(User_Habit.scoring_system_id == scoring_sys.id).all()
+
+    # associated_goals = User_Goal.query\
+    #     .filter(User_Goal.scoring_system_id == scoring_sys.id).all()
 
     return render_template("tracking_home.html", scoring_systems = scoring_systems)
 
@@ -57,132 +79,143 @@ def get_tracking_home():
 # Create Scoring System
 @tracking_bp.route("/scoring_sys/new", methods=["GET"])
 def get_new_scoring_sys():
-    if g.user:
-        form = ScoringSystemForm(request.form)
-
-        return render_template("scoring_system_new.html", form = form)
-
-    else:
-        flash("You must be logged in to access that page.", "warning")
+    # Check for login
+    if not g.user:
+        flash(msg_not_logged_in, "warning")
         return redirect(url_for("home_bp.homepage"))
+
+    # Create form object for rendering
+    form = ScoringSystemForm(request.form)
+    return render_template("scoring_system_new.html", form = form)
 
 @tracking_bp.route("/scoring_sys/new", methods=["POST"])
 def add_new_scoring_sys():
-    if g.user:
-        form = ScoringSystemForm(request.form)
+    # Check for login
+    if not g.user:
+        flash(msg_not_logged_in, "warning")
+        return redirect(url_for("home_bp.homepage"))
 
-        if form.validate_on_submit():
-            scoring_sys = Scoring_System(
-                user_id = g.user.id,
-                title_en = form.title.data,
-                description = form.description.data,
-                public = False
-            )
+    # Re-render page if unable to validate form data
+    form = ScoringSystemForm(request.form)
+    if not form.validate_on_submit():
+        return render_template(url_for("tracking_bp.get_new_scoring_sys"), form=form)
 
-            # Try adding scoring system to database
-            try:
-                db.session.add(scoring_sys)
-                db.session.commit()
-                return redirect(url_for("tracking_bp.get_new_scoring_params", scoring_sys_id = scoring_sys.id))
-            except Exception as e:
-                flash("An error occured, if this problem persists please contact our user assistance dept", "danger")
-                print(e)
-                db.session.rollback()
+    # If valid create scoring system object and try to add to database
+    scoring_sys = Scoring_System(
+        user_id = g.user.id,
+        title_en = form.title.data,
+        description = form.description.data,
+        public = False
+    )
 
-        else:
-            return render_template(url_for("tracking_bp.get_new_scoring_sys"), form=form)
+    try:
+        db.session.add(scoring_sys)
+        db.session.commit()
+        return redirect(url_for("tracking_bp.get_new_scoring_params", scoring_sys_id = scoring_sys.id))
+    except Exception as e:
+        flash("Sorry we ran into the problem!", "danger")
+        print(e)
+        db.session.rollback()
 
-    else:
-        flash("Please login to continue.", "warning")
-        return redirect(url_for("home_bp.homepage"))  
+    # If exception occured redirect to tracking home
+    return redirect(url_for("tracking_bp.get_tracking_home"))
+
 
 # Update Scoring System
 @tracking_bp.route("/scoring_sys/<int:scoring_sys_id>/edit", methods=["GET"])
 def get_edit_scoring_sys(scoring_sys_id):
-    if g.user:
+    # Check for login
+    if not g.user:
+        flash(msg_not_logged_in, "warning")
+        return redirect(url_for("home_bp.homepage"))
 
-        scoring_sys = Scoring_System.query\
-            .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys_id)).first()
+    # Get scoring system
+    scoring_sys = query_one_scoring_sys(g.user.id, scoring_sys_id)
 
-        if scoring_sys:
-            form = ScoringSystemForm(
-                title = scoring_sys.title_en,
-                description = scoring_sys.description
-            )
+    # If no scoring system found for user.id & scoring system combo access not authorized
+    if not scoring_sys:
+        flash(msg_not_authorized, "warning")
+        return redirect(url_for("tracking_bp.get_tracking_home"))
 
-            return render_template("scoring_system_edit.html",
-                    form=form, scoring_sys=scoring_sys)
-        else:
-            flash("We were unable to retrive your details for that scoring system.", "warning")
-            return redirect(url_for("home_bp.homepage"))
+    # Render form with scoring system information
+    form = ScoringSystemForm(
+        title = scoring_sys.title_en,
+        description = scoring_sys.description
+    )
 
-    else:
-        flash("Please login to continue.", "warning")
-        return redirect(url_for("home_bp.homepage"))  
+    return render_template("scoring_system_edit.html",
+            form=form, scoring_sys=scoring_sys)
 
 @tracking_bp.route("/scoring_sys/<int:scoring_sys_id>/edit", methods=["POST"])
 def update_scoring_sys(scoring_sys_id):
-    if g.user:
-        scoring_sys = Scoring_System.query\
-            .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys_id)).first()
+    # Check for login
+    if not g.user:
+        flash(msg_not_logged_in, "warning")
+        return redirect(url_for("home_bp.homepage"))
 
-        if scoring_sys:
-            form = ScoringSystemForm(request.form)
-            if form.validate_on_submit():
-                scoring_sys.title_en = form.title.data
-                scoring_sys.description = form.description.data
+    # If no scoring system found for user.id & scoring system combo access not authorized
+    scoring_sys = query_one_scoring_sys(g.user.id, scoring_sys_id)
+    if not scoring_sys:
+        flash(msg_not_authorized, "warning")
+        return redirect(url_for("tracking_bp.get_tracking_home"))
 
-                try:
-                    db.session.commit()
-                    return redirect(url_for("tracking_bp.get_tracking_home"))
-                except Exception as e:
-                    flash("An error occured, if this problem persists please contact our user assistance dept", "danger")
-                    print(e)
-                    db.session.rollback()
-            else:
-                return render_template("scoring_system_edit.html",
-                        form=form, scoring_sys=scoring_sys)
-        else:
-            flash("We were unable to retrive your details for that scoring system.", "warning")
-            return redirect(url_for("tracking_bp.get_tracking_home"))
-    else:
-        flash("Please login to continue.", "warning")
-        return redirect(url_for("home_bp.homepage"))  
+    # Re-render page if unable to validate form data
+    form = ScoringSystemForm(request.form)
+    if not form.validate_on_submit():
+        return render_template("scoring_system_edit.html",
+                form=form, scoring_sys=scoring_sys)
 
-    return redirect(url_for("tracking_bp.get_new_scoring_sys"))
+    # If data ok update scoring_sys data with form data & commit
+    scoring_sys.title_en = form.title.data
+    scoring_sys.description = form.description.data
+
+    try:
+        db.session.commit()
+        return redirect(url_for("tracking_bp.get_tracking_home"))
+    except Exception as e:
+        flash("An error occured, if this problem persists please contact our user assistance dept", "danger")
+        print(e)
+        db.session.rollback()
+
+    # Catch errant route paths & redirect to tracking home
+    return redirect(url_for("tracking_bp.get_tracking_home"))
+
 
 # Delete Scoring System
 @tracking_bp.route("/scoring_sys/<int:scoring_sys_id>/delete", methods=["POST"])
 def delete_scoring_sys(scoring_sys_id):
-    if g.user:
-        scoring_sys = Scoring_System.query\
-            .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys_id)).first()
+    # Check for login
+    if not g.user:
+        flash(msg_not_logged_in, "warning")
+        return redirect(url_for("home_bp.homepage"))
 
-        associated_habits = User_Habit.query\
-            .filter(User_Habit.scoring_system_id == scoring_sys.id).all()
-
-        associated_goals = User_Goal.query\
-            .filter(User_Goal.scoring_system_id == scoring_sys.id).all()
-
-
-        if scoring_sys and not associated_habits and not associated_goals:
-
-            db.session.delete(scoring_sys)
-
-            try:
-                db.session.commit()
-            except Exception as e:
-                flash("An error occured, if this problem persists please contact our user assistance dept", "danger")
-                print(e)
-                db.session.rollback()
-        else:
-            flash("We were unable to delete this scoring system, please ensure you have appropriate access and there are not habits or goals linked to this system.", "warning")
-
+    # If no scoring system found for user.id & scoring system combo access not authorized
+    scoring_sys = query_one_scoring_sys(g.user.id, scoring_sys_id)
+    if not scoring_sys:
+        flash(msg_not_authorized, "warning")
         return redirect(url_for("tracking_bp.get_tracking_home"))
-    else:
-        flash("Please login to continue.", "warning")
-        return redirect(url_for("home_bp.homepage"))  
 
+    #  Check for associated habits or goals
+    associated_habits = User_Habit.query\
+        .filter(User_Habit.scoring_system_id == scoring_sys.id).all()
+
+    associated_goals = User_Goal.query\
+        .filter(User_Goal.scoring_system_id == scoring_sys.id).all()
+
+    # If no habits or goals associated, ok to delete
+    if not associated_habits and not associated_goals:
+        db.session.delete(scoring_sys)
+        try:
+            db.session.commit()
+        except Exception as e:
+            flash("An error occured, if this problem persists please contact our user assistance dept", "danger")
+            print(e)
+            db.session.rollback()
+    else:
+        flash("We were unable to delete this scoring system, please ensure no habits or goals are linked to this system.", "warning")
+
+    # Redirect all outcomes to tracking hompage
+    return redirect(url_for("tracking_bp.get_tracking_home"))
 
 
 ###################################
@@ -192,70 +225,77 @@ def delete_scoring_sys(scoring_sys_id):
 # Read Scoring System Parameters
 @tracking_bp.route("/scoring_sys/<int:scoring_sys_id>/params", methods=["GET"])
 def get_new_scoring_params(scoring_sys_id):
-    if g.user:
+    # Check for login
+    if not g.user:
+        flash(msg_not_logged_in, "warning")
+        return redirect(url_for("home_bp.homepage"))
 
-        scoring_system = Scoring_System.query.filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys_id)).first()
+    # If no scoring system found for user.id & scoring system combo access not authorized
+    scoring_sys = query_one_scoring_sys(g.user.id, scoring_sys_id)
+    if not scoring_sys:
+        flash(msg_not_authorized, "warning")
+        return redirect(url_for("tracking_bp.get_tracking_home"))
 
-        if scoring_system:
-            parameters = Scoring_System.query\
-                    .join(Scoring_System_Params, Scoring_System.id == Scoring_System_Params.scoring_system_id)\
-                    .add_columns(Scoring_System_Params.score_bp, Scoring_System_Params.score_input, Scoring_System_Params.score_output, Scoring_System_Params.name_en,  Scoring_System_Params.id)\
-                    .filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys_id))\
-                    .order_by(Scoring_System_Params.score_bp)\
-                    .all()
+    # Load all parameters for the target scoring system
+    parameters = query_scoring_sys_params(g.user.id, scoring_sys.id)
 
-            form = ScoringSystemParamForm(request.form)
-
-            return render_template("scoring_system_params.html", form = form, scoring_system = scoring_system, parameters = parameters)
-
-        else:
-            flash("We were unable to retrieve that scoring system for your account.", "warning")
-
-    else:
-        flash("You must be logged in to access that page.", "warning")
-        
-    return redirect(url_for("home_bp.homepage"))
+    # Create form object for rendering
+    form = ScoringSystemParamForm(request.form)
+    return render_template("scoring_system_params.html", form = form, scoring_system = scoring_sys, parameters = parameters)
 
 # Create New Scoring System Parameter
 @tracking_bp.route("/scoring_sys/<int:scoring_sys_id>/params/new", methods=["POST"])
 def add_new_scoring_param(scoring_sys_id):
-    if g.user:
-        form = ScoringSystemParamForm(request.form)
+    # Check for login
+    if not g.user:
+        flash(msg_not_logged_in, "warning")
+        return redirect(url_for("home_bp.homepage"))
 
-        scoring_system = Scoring_System.query.filter(and_(Scoring_System.user_id == g.user.id, Scoring_System.id == scoring_sys_id)).first()
+    # If no scoring system found for user.id & scoring system combo access not authorized
+    scoring_sys = query_one_scoring_sys(g.user.id, scoring_sys_id)
+    if not scoring_sys:
+        flash(msg_not_authorized, "warning")
+        return redirect(url_for("tracking_bp.get_tracking_home"))
 
-        parameters = Scoring_System_Params.query.filter(Scoring_System_Params.scoring_system_id == scoring_sys_id)
+    # Load all parameters for the target scoring system
+    parameters = query_scoring_sys_params(g.user.id, scoring_sys.id)
 
-        breakpoints = [param.score_bp for param in parameters]
+    # Re-render page if unable to validate form data
+    form = ScoringSystemParamForm(request.form)
+    if not form.validate_on_submit():
+        return render_template("scoring_system_params.html", form = form, scoring_system = scoring_sys, parameters = parameters)
 
-        if breakpoints:
-            score_bp = max(breakpoints) + 1
-        else:
-            score_bp = 1
+    # If form data valid calculate next score_bp (score breakpoint) value
+    breakpoints = [param.score_bp for param in parameters]
 
-        if form.validate_on_submit():
-            param = Scoring_System_Params(
-                scoring_system_id = scoring_sys_id,
-                score_bp = score_bp,
-                score_input = form.score_input.data,
-                score_output = form.score_output.data,
-                name_en = form.name_en.data
-            )
+    if breakpoints:
+        score_bp = max(breakpoints) + 1
+    else:
+        score_bp = 1
 
-            # Try adding scoring system to database
-            try:
-                db.session.add(param)
-                db.session.commit()    
-            except Exception as e:
-                flash("An error occured, if this problem persists please contact our user assistance dept", "danger")
-                print(e)
-                db.session.rollback()
+    # Creating scoring system parameter object and try to add to database
+    param = Scoring_System_Params(
+        scoring_system_id = scoring_sys_id,
+        score_bp = score_bp,
+        score_input = form.score_input.data,
+        score_output = form.score_output.data,
+        name_en = form.name_en.data
+    )
 
-            return redirect(url_for("tracking_bp.get_new_scoring_params", scoring_sys_id = scoring_sys_id))
+    try:
+        db.session.add(param)
+        db.session.commit()    
+    except Exception as e:
+        flash("An error occured, if this problem persists please contact our user assistance dept", "danger")
+        print(e)
+        db.session.rollback()
 
-        else:
-            return render_template("scoring_system_params.html", form = form, scoring_system = scoring_system, parameters = parameters)
+    # Redirect all outcomes to scoring system parameters page
+    return redirect(url_for("tracking_bp.get_new_scoring_params", scoring_sys_id = scoring_sys_id))
 
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!
+# REWORKED TO HERE - 08/23/2020
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!
 # Update Scoring System Parameter
 @tracking_bp.route("/scoring_sys/<int:scoring_sys_id>/params/<int:scoring_param_id>/edit", methods=["GET"])
 def get_edit_scoring_param(scoring_sys_id, scoring_param_id):
@@ -1195,12 +1235,3 @@ def get_user_persona_scores_total_mins():
     else:
         jsonResponse = {'error': 'User must be authenticated to view that page.'}
         return jsonResponse
-
-
-
-# TODO:
-# Area Charts for Persona graph
-# https://developers.google.com/chart/interactive/docs/gallery/areachart
-# Partner JS file will also be necessary
-# - One for My Plan Page (minimized details)
-# - One for Homepage (more details)
