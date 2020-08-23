@@ -1,0 +1,37 @@
+<form action="{{ url_for('user_bp.update_user', username = user.username )}}" method="post">
+    {{ form.hidden_tag() }}
+
+    {% for field in form if field.widget.input_type != 'hidden'%}
+
+    <div class="form-group">
+    {% if field.type == "BooleanField" %}
+        <div class="form-check">
+            {{ field(class_="form-check form-check-input")}}
+            {{ field.label(class_="form-check-label") }}
+        </div>
+
+    {% elif field.type == "SelectField" %}
+
+        {{ field.label(class_="font-weight-bolder") }}
+        {{ field(class_="form-control")}}
+
+    {% else %}
+
+        {{ field.label(class_="font-weight-bolder") }}
+        {{ field(class_="form-control")}}
+
+    {% endif %}
+
+    {% for error in field.errors %}
+        <small class="form-text text-danger">
+        {{error}}
+        </small>
+    {% endfor %}
+    </div>
+
+    {% endfor %}
+
+    <a href="{{ url_for('user_bp.get_user_profile', username = user.username )}}" class="btn btn-secondary my-2">Cancel</a>
+    <button type="submit" class="btn btn-primary my-2">Update</button>
+</form>
+
