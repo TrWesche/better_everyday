@@ -24,7 +24,7 @@ class ProdConfig(Config):
     TESTING = False
 
     # Database
-    SQLALCHEMY_DATABASE_URI = environ.get("SQLALCHEMY_DATABASE_URI_PROD")
+    SQLALCHEMY_DATABASE_URI = environ.get("DATABASE_URL")
     SQLALCHEMY_ECHO = False
     
     # Debug Toolbar
