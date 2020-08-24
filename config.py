@@ -12,6 +12,7 @@ class Config:
     FLASK_APP = environ.get('FLASK_APP')
     CURR_USER_KEY = environ.get('CURR_USER_KEY')
 
+    # PEXELS_API_KEY = environ.get('PEXELS_API_KEY')
 
     # Database
     SQLALCHEMY_TRACK_MODIFICATIONS = True

@@ -1,5 +1,8 @@
 import requests
-from .key import API_KEY
+from os import environ
+# from .key import API_KEY
+
+API_KEY = environ.get('PEXELS_API_KEY')
 
 rootURL = "https://api.pexels.com/v1"
 
