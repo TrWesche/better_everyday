@@ -33,7 +33,7 @@ tracking_bp = Blueprint(
 
 msg_not_logged_in = "Please login to continue."
 msg_not_authorized = "You are not authorized to view that resource."
-
+msg_not_found = "We were unable to retrieve the specified entry."
 
 def query_one_scoring_sys(user_id, scoring_sys_id):
     query_result = Scoring_System.query\
@@ -58,6 +58,34 @@ def query_scoring_sys_params(user_id, scoring_sys_id):
 def query_one_scoring_sys_param(scoring_sys_id, scoring_param_id):
     query_result = Scoring_System_Params.query\
         .filter(and_(Scoring_System_Params.scoring_system_id == scoring_sys_id, Scoring_System_Params.id == scoring_param_id))\
+        .first()
+    return query_result
+
+def query_one_user_goal(user_id, user_goal_id):
+    query_result = User_Goal.query\
+        .join(Goal, Goal.id == User_Goal.goal_id)\
+        .add_columns(Goal.title_en, Goal.description_public)\
+        .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == user_goal_id))\
+        .first()
+    return query_result
+
+def query_user_goal_scores(user_goal_id):
+    query_result = Goal_Score.query\
+        .filter(Goal_Score.goal_id == user_goal_id)\
+        .order_by(desc(Goal_Score.date))\
+        .all()
+    return query_result
+
+def query_one_user_goal_score(score_id):
+    query_result = Goal_Score.query\
+        .filter(Goal_Score.id == score_id)\
+        .first()
+    return query_result
+
+def query_goal_score_date(user_id, user_goal_id, goal_date):
+    query_result = Goal_Score.query\
+        .join(User_Goal, User_Goal.id == Goal_Score.goal_id)\
+        .filter(and_(User_Goal.user_id == user_id, User_Goal.id == user_goal_id, Goal_Score.date == goal_date))\
         .first()
     return query_result
 
@@ -415,9 +443,6 @@ def delete_scoring_param(scoring_sys_id, scoring_param_id):
     return redirect(url_for("tracking_bp.get_new_scoring_params", scoring_sys_id = scoring_sys.id))
 
 
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!
-# REWORKED TO HERE - 08/23/2020
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!
 ###################################
 # CRUD - Goal Scores
 ###################################
@@ -425,201 +450,192 @@ def delete_scoring_param(scoring_sys_id, scoring_param_id):
 # Create New Goal Score
 @tracking_bp.route("/goal_scores/<int:goal_id>/new", methods=["GET"])
 def get_new_goal_score(goal_id):
-    if g.user:
-        form = GoalScoreForm()
-
-        user_goal = User_Goal.query\
-            .join(Goal, Goal.id == User_Goal.goal_id)\
-            .add_columns(Goal.title_en, Goal.description_public)\
-            .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id))\
-            .first()
-        
-        goal_scores = Goal_Score.query\
-            .filter(Goal_Score.goal_id == goal_id)\
-            .order_by(desc(Goal_Score.date))\
-            .all()
-
-        form.date.data = datetime.today()
-
-        return render_template("goal_score_new.html", form = form, user_goal = user_goal, goal_scores = goal_scores)
-
-    else:
-        flash("You must be logged in to access that page.", "warning")
+    # Check for login
+    if not g.user:
+        flash(msg_not_logged_in, "warning")
         return redirect(url_for("home_bp.homepage"))
+
+    form = GoalScoreForm()
+
+    # If no goal found for user.id & user_goal id combo access not authorized
+    user_goal = query_one_user_goal(g.user.id, goal_id)
+    if not user_goal:
+        flash(msg_not_authorized, "warning")
+        return redirect(url_for("home_bp.homepage"))
+
+    # Retrieve goal scores
+    goal_scores = query_user_goal_scores(goal_id)
+
+    # Set default date for entry form to today
+    form.date.data = datetime.today()
+
+    return render_template("goal_score_new.html", form = form, user_goal = user_goal, goal_scores = goal_scores)
+
 
 @tracking_bp.route("/goal_scores/<int:goal_id>/new", methods=["POST"])
 def add_new_goal_score(goal_id):
-    if g.user:
-        form = GoalScoreForm(obj=request.form)
-
-        user_goal = User_Goal.query\
-            .join(Goal, Goal.id == User_Goal.goal_id)\
-            .add_columns(Goal.title_en, Goal.description_public)\
-            .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id))\
-            .first()
-
-        if user_goal and form.validate_on_submit():
-
-            date_check = Goal_Score.query\
-                .join(User_Goal, User_Goal.id == Goal_Score.goal_id)\
-                .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id, Goal_Score.date == form.date.data))\
-                .first()
-
-            if not date_check:
-
-                score = Goal_Score(
-                    date = form.date.data,
-                    score = form.score.data,
-                    goal_id = goal_id
-                )
-
-                # Try adding goal score to database
-                try:
-                    db.session.add(score)
-                    db.session.commit()    
-                except Exception as e:
-                    flash("Oops... We were unable to add a new entry to your progress log.  We'll look into it!", "danger")
-                    print(e)
-                    db.session.rollback()
-            
-            else:
-                flash("An entry already exists for this date, please modify existing entry.", "info")
-                db.session.rollback()
-
-
-            return redirect(url_for("tracking_bp.get_new_goal_score", goal_id = goal_id))
-
-        else:
-            return render_template("goal_score_new.html", form = form, user_goal = user_goal)
-
-    else:
-        flash("You must be logged in to access that page.", "warning")
+    # Check for login
+    if not g.user:
+        flash(msg_not_logged_in, "warning")
         return redirect(url_for("home_bp.homepage"))
+
+    # If no goal found for user.id & user_goal id combo access not authorized
+    user_goal = query_one_user_goal(g.user.id, goal_id)
+    if not user_goal:
+        flash(msg_not_authorized, "warning")
+        return redirect(url_for("home_bp.homepage"))
+
+    # Re-render page if unable to validate form data
+    form = GoalScoreForm(obj=request.form)
+    if not form.validate_on_submit():
+        return render_template("goal_score_new.html",
+                    form = form, user_goal = user_goal)
+
+    # Check that there is a not an entry for the target date in the database already
+    date_check = query_goal_score_date(g.user.id, goal_id, form.date.data)
+
+    if date_check:
+        flash("An entry already exists for this date, please modify existing entry.", "info")
+        return redirect(url_for("tracking_bp.get_new_goal_score", goal_id = goal_id))
+
+    # Create new score object and add to database
+    score = Goal_Score(
+        date = form.date.data,
+        score = form.score.data,
+        goal_id = goal_id
+    )
+
+    try:
+        db.session.add(score)
+        db.session.commit()    
+    except Exception as e:
+        flash("Oops... We were unable to add a new entry to your progress log.  We'll look into it!", "danger")
+        print(e)
+        db.session.rollback()
+
+    return redirect(url_for("tracking_bp.get_new_goal_score", goal_id = goal_id))
+
 
 # Update Goal Score
 @tracking_bp.route("/goal_scores/<int:goal_id>/scores/<int:score_id>/update", methods=["GET"])
 def get_edit_goal_score(goal_id, score_id):
-    if g.user:
-
-        user_goal = User_Goal.query\
-            .join(Goal, Goal.id == User_Goal.goal_id)\
-            .add_columns(Goal.title_en, Goal.description_public)\
-            .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id))\
-            .first()
-
-        if user_goal:
-            goal_scores = Goal_Score.query\
-                .filter(Goal_Score.goal_id == goal_id)\
-                .order_by(desc(Goal_Score.date))\
-                .all()
-
-            target_score = Goal_Score.query\
-                .filter(Goal_Score.id == score_id)\
-                .first()
-
-            form = GoalScoreForm(
-                date = target_score.date,
-                score = target_score.score
-            )
-
-            return render_template("goal_score_new.html", form = form, user_goal = user_goal, goal_scores = goal_scores, edit = True, target_score_id = target_score.id)
-
-        else:
-            flash("We were unable to retrieve the requested goal.", "warning")
-            return redirect(url_for("plan_bp.get_plan_home"))
-
-    else:
-        flash("You must be logged in to access that page.", "warning")
+    # Check for login
+    if not g.user:
+        flash(msg_not_logged_in, "warning")
         return redirect(url_for("home_bp.homepage"))
+
+    # If no goal found for user.id & user_goal id combo access not authorized
+    user_goal = query_one_user_goal(g.user.id, goal_id)
+    if not user_goal:
+        flash(msg_not_authorized, "warning")
+        return redirect(url_for("home_bp.homepage"))
+
+    # Retrieve goal scores (for rendering)
+    goal_scores = query_user_goal_scores(goal_id)
+
+    # Create empty score form
+    form = GoalScoreForm()
+
+    # Check for target score
+    target_score = query_one_user_goal_score(score_id)
+    if not target_score:
+        flash(msg_not_found, "warning")
+        return render_template("goal_score_new.html", form = form, user_goal = user_goal, goal_scores = goal_scores, edit = True, target_score_id = target_score.id)
+    
+    # Set form data to retrieved data
+    form.date.data = target_score.date
+    form.score.data = target_score.score
+
+    return render_template("goal_score_new.html", form = form, user_goal = user_goal, goal_scores = goal_scores, edit = True, target_score_id = target_score.id)
 
 @tracking_bp.route("/goal_scores/<int:goal_id>/scores/<int:score_id>/update", methods=["POST"])
 def update_goal_score(goal_id, score_id):
-    if g.user:
-        form = GoalScoreForm(obj=request.form)
-
-        user_goal = User_Goal.query\
-            .join(Goal, Goal.id == User_Goal.goal_id)\
-            .add_columns(Goal.title_en, Goal.description_public)\
-            .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id))\
-            .first()
-
-        goal_scores = Goal_Score.query\
-            .filter(Goal_Score.goal_id == goal_id)\
-            .order_by(desc(Goal_Score.date))\
-            .all()
-
-        if user_goal and form.validate_on_submit():
-
-            date_check = Goal_Score.query\
-                .join(User_Goal, User_Goal.id == Goal_Score.goal_id)\
-                .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id, Goal_Score.date == form.date.data))\
-                .first()
-
-            if not date_check or date_check.id == score_id:
-                target_score = Goal_Score.query\
-                    .filter(Goal_Score.id == score_id)\
-                    .first()
-
-                target_score.date = form.date.data
-                target_score.score = form.score.data
-
-                # Try adding goal score to database
-                try:
-                    db.session.commit()    
-                except Exception as e:
-                    flash("Oops... We were unable to update this goal.  We're looking into it!", "danger")
-                    print(e)
-                    db.session.rollback()
-
-                return redirect(url_for("tracking_bp.get_new_goal_score", goal_id = goal_id))
-            
-            else:
-                flash("An entry already exists for the target date.", "info")
-                db.session.rollback()
-                return render_template("goal_score_new.html", form = form, user_goal = user_goal, goal_scores = goal_scores, edit = True)
-
-        else:
-            return render_template("goal_score_new.html", form = form, user_goal = user_goal, goal_scores = goal_scores, edit = True)
-
-    else:
-        flash("You must be logged in to access that page.", "warning")
+    # Check for login
+    if not g.user:
+        flash(msg_not_logged_in, "warning")
         return redirect(url_for("home_bp.homepage"))
 
+    # If no goal found for user.id & user_goal id combo access not authorized
+    user_goal = query_one_user_goal(g.user.id, goal_id)
+    if not user_goal:
+        flash(msg_not_authorized, "warning")
+        return redirect(url_for("home_bp.homepage"))
+    
+    # Retrieve goal scores (for rendering)
+    goal_scores = query_user_goal_scores(goal_id)
+    
+    form = GoalScoreForm(obj=request.form)
+    if not form.validate_on_submit():
+        return render_template("goal_score_new.html",
+                        form = form, user_goal = user_goal, 
+                        goal_scores = goal_scores, edit = True)
+
+    # Check that there is a not an entry for the target date or the date is not being changed
+    date_check = query_goal_score_date(g.user.id, goal_id, form.date.data)
+
+    if date_check and not date_check.id == score_id:
+        flash("An entry already exists for this date, please modify existing entry.", "info")
+        return redirect(url_for("tracking_bp.get_edit_goal_score", goal_id = goal_id, score_id = score_id))
+
+    # Check for target score
+    target_score = query_one_user_goal_score(score_id)
+    if not target_score:
+        flash(msg_not_found, "warning")
+        return render_template("goal_score_new.html",
+                        form = form, user_goal = user_goal,
+                        goal_scores = goal_scores, edit = True,
+                        target_score_id = target_score.id)
+
+    # Update the target score and enter in the database
+    target_score.date = form.date.data
+    target_score.score = form.score.data
+
+    try:
+        db.session.commit()    
+    except Exception as e:
+        flash("Oops... We were unable to update this goal.  We're looking into it!", "danger")
+        print(e)
+        db.session.rollback()
+
+    return redirect(url_for("tracking_bp.get_new_goal_score", goal_id = goal_id))
+        
 # Delete Goal Score
 @tracking_bp.route("/goal_scores/<int:goal_id>/scores/<int:score_id>/delete", methods=["POST"])
 def delete_goal_score(goal_id, score_id):
-    if g.user:
+    # Check for login
+    if not g.user:
+        flash(msg_not_logged_in, "warning")
+        return redirect(url_for("home_bp.homepage"))
 
-        user_goal = User_Goal.query\
-            .join(Goal, Goal.id == User_Goal.goal_id)\
-            .add_columns(Goal.title_en, Goal.description_public)\
-            .join(Goal_Score, Goal_Score.goal_id == User_Goal.goal_id)\
-            .add_columns(Goal_Score.id)\
-            .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id, Goal_Score.id == score_id))\
-            .first()
+    # If no goal found for user.id, user_goal.id, and goal_score.id combo access not authorized
+    user_goal = User_Goal.query\
+        .join(Goal, Goal.id == User_Goal.goal_id)\
+        .add_columns(Goal.title_en, Goal.description_public)\
+        .join(Goal_Score, Goal_Score.goal_id == User_Goal.goal_id)\
+        .add_columns(Goal_Score.id)\
+        .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id, Goal_Score.id == score_id))\
+        .first()
 
-        if user_goal:
-            target_score = Goal_Score.query\
-                .filter(Goal_Score.id == score_id)\
-                .first()
+    if not user_goal:
+        flash(msg_not_authorized, "warning")
+        return redirect(url_for("home_bp.homepage"))
 
-            db.session.delete(target_score)
 
-            try:
-                db.session.commit()
-            except Exception as e:
-                flash("An error occured, if this problem persists please contact support", "danger")
-                print(e)
-                db.session.rollback()
-        else:
-            flash("We were unable to find the target score.", "warning")
+    target_score = query_one_user_goal_score(score_id)
+    db.session.delete(target_score)
 
-        return redirect(url_for("tracking_bp.get_new_goal_score", goal_id = goal_id))
+    try:
+        db.session.commit()
+    except Exception as e:
+        flash("An error occured, if this problem persists please contact support", "danger")
+        print(e)
+        db.session.rollback()
 
-    else:
-        flash("Please login to continue.", "warning")
-        return redirect(url_for("home_bp.homepage"))  
+    return redirect(url_for("tracking_bp.get_new_goal_score", goal_id = goal_id))
 
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!
+# REWORKED TO HERE - 08/24/2020
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!
 ###################################
 # CRUD - Habit Scores
 ###################################

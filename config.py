@@ -12,8 +12,6 @@ class Config:
     FLASK_APP = environ.get('FLASK_APP')
     CURR_USER_KEY = environ.get('CURR_USER_KEY')
 
-    # PEXELS_API_KEY = environ.get('PEXELS_API_KEY')
-
     # Database
     SQLALCHEMY_TRACK_MODIFICATIONS = True
 
@@ -41,7 +39,7 @@ class TestConfig(Config):
     # Database
     SQLALCHEMY_RECORD_QUERIES = True
     SQLALCHEMY_DATABASE_URI = environ.get("SQLALCHEMY_DATABASE_URI_TEST")
-    SQLALCHEMY_ECHO = False
+    SQLALCHEMY_ECHO = True
 
     # Debug Toolbar
     DEBUG_TB_INTERCEPT_REDIRECTS = False
