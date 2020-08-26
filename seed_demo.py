@@ -28,8 +28,11 @@ def seed_demo():
 
     with app.app_context():
         # Password = password
+        
         db.drop_all()
+        print("Dropped db tables - all")
         db.create_all()
+        print("Created db tables - all")
 
         a1 = Authentication(
             username="testuser1",
