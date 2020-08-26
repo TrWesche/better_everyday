@@ -19,7 +19,7 @@ from application.tracking.models.model_habit_score import Habit_Score
 
 from datetime import datetime, timedelta
 
-os.environ['DATABASE_URL'] = "postgres:///better-everyday-test-v2"
+# os.environ['DATABASE_URL'] = "postgres:///better-everyday-test-v2"
 
 from wsgi import app
 # from wsgi import app
@@ -27,6 +27,9 @@ from application import db
 
 with app.app_context():
     # Password = password
+    db.drop_all()
+    db.create_all()
+
     a1 = Authentication(
         username="testuser1",
         password="$2b$12$gyjYvEBqcebZBKiX3C8OGO5cNiXmNVFdzVbcNdxE/eCruG4I5lEOG"
