@@ -1,6 +1,5 @@
 from flask import Blueprint, render_template, g, url_for, redirect
 from flask import current_app as app
-# import requests
 
 from sqlalchemy import and_
 

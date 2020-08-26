@@ -7,7 +7,6 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.0-2/css/all.min.css">
     {% block style_sheets %}{% endblock %}
-    <!-- <link rel="stylesheet" href="./static/css/style.css"> -->
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -31,9 +30,6 @@
                         <a class="nav-link" href="{{ url_for('tracking_bp.get_tracking_home') }}">My Tracking</a>
                     </li>
                     {% endif %}
-                    <!-- <li class="nav-item {% block nav_community %}{% endblock %}">
-                        <a class="nav-link" href="{{ url_for('community_bp.get_community_home') }}">Community</a>
-                    </li> -->
                 </ul>
                 
                 <ul class="nav navbar-nav navbar-right">

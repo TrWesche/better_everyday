@@ -27,7 +27,7 @@ Setup your personas, habits, and goals on the BE website and track your journey 
 # Setup requirements
 In order to get the environment running an environment file simply named .env will need to be created with the appropriate variables.  An example file for this purpose has been included under the name of ".env.example."  The three variables listed below must be updated for complete project functionalities.
 ```
-SQLALCHEMY_DATABASE_URI_PROD = "ProductionDatabasePath"
+DATABASE_URL = "ProductionDatabasePath"
 
 SQLALCHEMY_DATABASE_URI_TEST = "TestDatabasePath"
 

@@ -136,4 +136,4 @@ def user_logout():
     return redirect(url_for('home_bp.homepage'))
 
 
-## TODO: Optional - Change Password Route
+## TODO: MVP Not Implemented - Change Password Route

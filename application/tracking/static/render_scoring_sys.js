@@ -27,10 +27,7 @@ async function drawStepChart(system, target_div, chart_title) {
         chartJson = await getChartData(system)
     }
 
-    // const jsonData = await getChartData(system)
-    
     // Create our data table out of JSON data loaded from server.
-    // var data = new google.visualization.DataTable(jsonData.data);
     var data = new google.visualization.DataTable(chartJson.data);
 
     // Instantiate and draw our chart, passing in some options.

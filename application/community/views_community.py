@@ -18,18 +18,9 @@ community_bp = Blueprint(
 )
 
 @community_bp.route("/", methods=["GET"])
-# TODO: Implement search functionality
 def get_community_home():
-    return render_template("community_home.html")
+    return redirect("home_bp.homepage")
+
+# TODO: MVP Not Implemented - Community Routes 
 
 
-@community_bp.route("/new", methods=["GET", "POST"])
-def get_new_community_form():
-    return redirect(url_for("community_bp.get_communities_home"))
-
-
-@community_bp.route("/<int:community_id>", methods=["GET"])
-def get_community_page(community_id):
-    return redirect(url_for("community_bp.get_communities_home"))
-
-# TODO: Define other routes for community posts, additions, deletions, etc.

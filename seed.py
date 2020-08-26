@@ -1,5 +1,3 @@
-# import os
-
 from application.user.models.model_user import User
 from application.authentication.models.model_auth import Authentication
 
@@ -18,8 +16,6 @@ from application.tracking.models.model_goal_score import Goal_Score
 from application.tracking.models.model_habit_score import Habit_Score
 
 from datetime import datetime, timedelta
-
-# os.environ['DATABASE_URL'] = "postgres:///better-everyday-test-v2"
 
 from wsgi import app
 from application import db

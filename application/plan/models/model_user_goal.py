@@ -20,8 +20,6 @@ class User_Goal(db.Model):
     
     description_private = db.Column(db.String(500))
 
-    # persona = db.relationship("Persona", secondary = "user_persona", primaryjoin=("User_Goal.user_persona_id == User_Persona.id"), secondaryjoin=("User_Persona.id == Persona.id"))
-
     goal = db.relationship("Goal", primaryjoin="and_(User_Goal.goal_id == Goal.id)")
 
     scores = db.relationship("Goal_Score", primaryjoin="Goal_Score.goal_id == User_Goal.id", cascade="all, delete")
