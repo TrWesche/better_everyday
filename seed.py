@@ -1,4 +1,4 @@
-import os
+# import os
 
 from application.user.models.model_user import User
 from application.authentication.models.model_auth import Authentication
@@ -22,7 +22,6 @@ from datetime import datetime, timedelta
 # os.environ['DATABASE_URL'] = "postgres:///better-everyday-test-v2"
 
 from wsgi import app
-# from wsgi import app
 from application import db
 
 with app.app_context():
