@@ -31,51 +31,6 @@ plan_bp = Blueprint(
 )
 
 
-# @plan_bp.route("/", methods=["GET"])
-# def get_plan_home():
-#     user_personas = None
-#     user_habits = None
-#     user_goals = None
-
-#     if g.user:
-#         user_personas = User_Persona.query\
-#             .join(Persona, User_Persona.persona_id == Persona.id)\
-#             .add_columns(User_Persona.user_id, User_Persona.id, Persona.id, Persona.title, Persona.description)\
-#             .filter(User_Persona.user_id == g.user.id).all()
-
-#         user_habits = User_Habit.query\
-#             .join(Habit, User_Habit.habit_id == Habit.id)\
-#             .add_columns(User_Habit.user_id, User_Habit.id, Habit.id, Habit.title, Habit.description)\
-#             .filter(User_Habit.user_id == g.user.id).all()
-
-#         user_goals = User_Goal.query\
-#             .join(Goal, User_Goal.goal_id == Goal.id)\
-#             .add_columns(User_Goal.user_id, User_Goal.id, Goal.id, Goal.title, Goal.description)\
-#             .filter(User_Goal.user_id == g.user.id).all()
-
-#         persona_list = [(persona.id, persona.title) for persona in user_personas]
-
-#         user_persona_form = UserPersonaFrom()
-
-#         user_habit_form = UserHabitForm()
-#         user_habit_form.persona.choices = persona_list
-
-#         user_goal_form = UserGoalForm()
-#         user_goal_form.persona.choices = persona_list
-
-#         return render_template(
-#             "plan_home.html", 
-#             user_personas=user_personas, 
-#             user_habits=user_habits, 
-#             user_goals=user_goals,
-#             user_persona_form=user_persona_form,
-#             user_habit_form=user_habit_form,
-#             user_goal_form=user_goal_form)
-
-#     else:
-#         flash("You must be logged in to access that page.", "warning")
-#         return redirect(url_for("home_bp.homepage"))
-
 @plan_bp.route("/", methods=["GET"])
 def get_plan_home():
     if g.user:

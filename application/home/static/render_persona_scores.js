@@ -1,6 +1,6 @@
-const dataSrcRoot = `${window.location.origin}/tracking/api/persona_scores` //"http://localhost:5000/tracking/scoring_sys"
+const dataSrcRoot = `${window.location.origin}/tracking/api/persona_scores`
 
-// TODO: Data caching for responsive website
+let chartJson;
 
 // Load the Visualization API and the corechart package.
 google.charts.load('current', {'packages':['corechart']});
@@ -23,10 +23,12 @@ async function getChartData(user_persona_id, qty_days) {
 }
 
 async function drawStepChart(user_persona_id, qty_days, target_div) {
-    const jsonData = await getChartData(user_persona_id, qty_days)
+    if (!chartJson) {
+        chartJson = await getChartData(user_persona_id, qty_days)
+    }
 
     // Create our data table out of JSON data loaded from server.
-    var data = new google.visualization.DataTable(jsonData.data);
+    var data = new google.visualization.DataTable(chartJson.data);
 
     // Instantiate and draw our chart, passing in some options.
     var chart = new google.visualization.AreaChart(document.getElementById(target_div));
@@ -52,7 +54,6 @@ async function drawStepChart(user_persona_id, qty_days, target_div) {
     chart.draw(data, options);
 }
 
-//!**!// Need to look into a better way to do this.  Causes to many queries in this form.
-// $(window).resize(function(){
-//     drawChart();
-// });
+$(window).resize(function(){
+    drawChart();
+});

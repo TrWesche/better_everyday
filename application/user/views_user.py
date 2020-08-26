@@ -3,7 +3,7 @@ from flask import current_app as app
 from sqlalchemy import exc
 from sqlalchemy.orm import load_only
 from .models.model_user import User
-from .forms.from_user_update import UserUpdateFrom
+from .forms.form_user_update import UserUpdateFrom
 
 from application import db
 
