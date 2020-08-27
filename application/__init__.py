@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_debugtoolbar import DebugToolbarExtension
-from ..seed_demo import seed_demo
 
 # Globally accessible libraries
 db = SQLAlchemy()
@@ -37,7 +36,5 @@ def create_app():
         # Create all db tables
         # db.create_all()
 
-        # Create test user data
-        seed_demo()
-
+        
         return app

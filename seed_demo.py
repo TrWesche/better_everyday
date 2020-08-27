@@ -29,9 +29,7 @@ def seed_demo():
         # Password = password
         
         db.drop_all()
-        print("Dropped db tables - all")
         db.create_all()
-        print("Created db tables - all")
 
         a1 = Authentication(
             username="testuser1",
@@ -723,4 +721,3 @@ def seed_demo():
         generateUserHabitScores(10, u2_h4.id, 0, 100)
         generateUserHabitScores(20, u2_h5.id, 0, 100)
         generateUserHabitScores(30, u2_h6.id, 0, 100)
-
