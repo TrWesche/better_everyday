@@ -721,3 +721,6 @@ def seed_demo():
         generateUserHabitScores(10, u2_h4.id, 0, 100)
         generateUserHabitScores(20, u2_h5.id, 0, 100)
         generateUserHabitScores(30, u2_h6.id, 0, 100)
+
+
+seed_demo()
