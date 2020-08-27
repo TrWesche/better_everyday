@@ -3,7 +3,7 @@ from wtforms import StringField, BooleanField, TextAreaField
 from wtforms.validators import DataRequired, Length
 
 
-class UserPersonaFrom(FlaskForm):
+class UserPersonaForm(FlaskForm):
     """Form for creating & updating user personas."""
 
     title = StringField('Title', validators=[DataRequired(), Length(max=50)])

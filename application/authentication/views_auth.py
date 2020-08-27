@@ -21,7 +21,6 @@ auth_bp = Blueprint(
 )
 
 
-
 @auth_bp.before_app_request
 def add_user_to_g():
     """If we're logged in, add curr user to Flask global."""
@@ -102,35 +101,33 @@ def user_registration():
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def user_login():
-
     form = UserLoginForm(request.form)
+    # If form not filled out correctly re-render page
+    if not form.validate_on_submit():
+        return render_template('user_login.html', form=form)
 
-    
-    if form.validate_on_submit():
-        # Authenticate login credentials
-        auth = Authentication.authenticate(form.username.data,
-                                            form.password.data)
-
-        if auth:
-            # If ok lookup user, should return only one value
-            user = User.query.filter(User.username == auth.username).one()
-            if user:
-                do_login(user)
-                flash(f"Welcome back {user.first_name}!", "success")
-                return redirect(url_for("home_bp.homepage"))
-
-        # If failure inform user
+    # Authenticate login credentials
+    auth = Authentication.authenticate(form.username.data,
+                                        form.password.data)
+    # On login failure inform user & re-render login template
+    if not auth:
         flash("Incorrect username or password.", 'danger')
+        return render_template('user_login.html', form=form)
 
-    # On get or login failure render login template
-    return render_template('user_login.html', form=form)
+    # If ok lookup user, should return only one value
+    user = User.query.filter(User.username == auth.username).one()
+    if user:
+        do_login(user)
+        flash(f"Welcome back {user.first_name}!", "success")
+    else:
+        flash("Error encountered on login.")
+
+    return redirect(url_for("home_bp.homepage"))
 
 
 @auth_bp.route("/logout", methods=["GET"])
 def user_logout():
-
     do_logout()
-
     flash("See you next time!", "success")
 
     return redirect(url_for('home_bp.homepage'))

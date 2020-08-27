@@ -43,7 +43,7 @@ def generateSampleData(user_id):
 
 
     # Sample habit scores are generated
-    generateUserHabitScores(7, user_habit_id, 20, 80)
+    generateUserHabitScores(30, user_habit_id, 20, 80)
 
 
 
@@ -56,4 +56,4 @@ def generateSampleData(user_id):
     user_goal_id = generateUserGoal(user_goal_title, user_goal_description_public, user_id, user_persona_id, 
                                         scoring_system_id, user_goal_description_private)
 
-    generateUserGoalScores(7, user_goal_id, 20, 80)
+    generateUserGoalScores(30, user_goal_id, 20, 80)
