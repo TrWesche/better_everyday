@@ -1,22 +1,20 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_debugtoolbar import DebugToolbarExtension
-# from flask_login import LoginManager
+from ..seed_demo import seed_demo
 
 # Globally accessible libraries
 db = SQLAlchemy()
-# login_manager = LoginManager()
 
 def create_app():
     """Initialize the core application."""
     app = Flask(__name__, instance_relative_config=False)
-    app.config.from_object('config.TestConfig')
-    # app.config.from_object('config.ProdConfig')
-    debug = DebugToolbarExtension(app)
+    # app.config.from_object('config.TestConfig')
+    app.config.from_object('config.ProdConfig')
+    # debug = DebugToolbarExtension(app)
 
     # Initialize Plugins
     db.init_app(app)
-    # login_manager.init_app(app)
 
     with app.app_context():
         # Include our Routes
@@ -36,7 +34,10 @@ def create_app():
         app.register_blueprint(views_tracking.tracking_bp, url_prefix = "/tracking")
 
         
+        # Create all db tables
+        # db.create_all()
 
-        db.create_all()
+        # Create test user data
+        seed_demo()
 
         return app

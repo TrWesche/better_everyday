@@ -20,6 +20,9 @@ from datetime import datetime, timedelta
 from wsgi import app
 from application import db
 
+from application.services.sample_gen.generator_user_goal_scores import generateUserGoalScores
+from application.services.sample_gen.generator_user_habit_scores import generateUserHabitScores
+
 def seed_demo():
 
     with app.app_context():
@@ -41,17 +44,17 @@ def seed_demo():
         )
 
         u1 = User(
-            first_name="Test",
-            last_name="User",
-            email="testuser1@test.com",
+            first_name="Melissa",
+            last_name="McDaniel",
+            email="MMcDaniel@betest.com",
             username="testuser1",
             public = True
         )
 
         u2 = User(
-            first_name="Test",
-            last_name="User",
-            email="testuser2@test.com",
+            first_name="Richard",
+            last_name="Greenway",
+            email="RGreenway@betest.com",
             username="testuser2",
             public = True
         )
@@ -63,79 +66,154 @@ def seed_demo():
 
 
         p1 = Persona(
-            title_en = "testpersona1",
-            description_public = "ThisIsAPublicDescription Persona 1"
+            title_en = "Runner",
+            description_public = "An athlete with strong cardio ability in running."
         )
 
         p2 = Persona(
-            title_en = "testpersona2",
-            description_public = "ThisIsAPublicDescription Persona 2"
+            title_en = "Painter",
+            description_public = "An artist who creates physical art with paint and complementary medias."
         )
 
         p3 = Persona(
-            title_en = "testpersona3",
-            description_public = "ThisIsAPublicDescription Persona 3"
+            title_en = "Software Engineer",
+            description_public = "An engineer specialized in the design, development and maintenance of software."
         )
 
+        p4 = Persona(
+            title_en = "Olympian",
+            description_public = "An athlete at the top of their physical and mental state representing their nation in global competition."
+        )
+
+        p5 = Persona(
+            title_en = "Rock Star",
+            description_public = "An musician with a notable following who writes and performs music identified as the rock genre."
+        )
+
+        # User 1 & User 2
         h1 = Habit(
-            title_en = "testhabit1",
-            description_public = "ThisIsAPublicDescription Habit 1"
+            title_en = "Stretch",
+            description_public = "An activity to increase physical mobility and encourage recovery."
         )
 
+        # User 1
         h2 = Habit(
-            title_en = "testhabit2",
-            description_public = "ThisIsAPublicDescription Habit 2"
+            title_en = "Run",
+            description_public = "The activity of running / propelling yourself by foot."
         )
 
+        # User 1 & User 2
         h3 = Habit(
-            title_en = "testhabit3",
-            description_public = "ThisIsAPublicDescription Habit 3"
+            title_en = "Healthy Diet",
+            description_public = "Follow a diet which encourages physical health."
         )
 
+        # User 1 & User 2
+        h4 = Habit(
+            title_en = "Sketch",
+            description_public = "Catalogue & experiment in artistic design through rough sketching."
+        )
+
+        # User 1 & User 2
+        h5 = Habit(
+            title_en = "Paint",
+            description_public = "Create physical art utilizing."
+        )
+
+        # User 2
+        h6 = Habit(
+            title_en = "Code",
+            description_public = "Write code to create projects and/or practice new concepts."
+        )
+
+         # User 2
+        h7 = Habit(
+            title_en = "Curl",
+            description_public = "Engage in the fine sport of curling."
+        )
+
+        # User 1
+        h8 = Habit(
+            title_en = "Sing",
+            description_public = "Seranade audiences, loved ones, or your wall with your lovely voice."
+        )
+
+        # User 1
         g1 = Goal(
-            title_en = "testgoal1",
-            description_public = "ThisIsAPublicDescription Goal 1"
+            title_en = "Run 25kms in a single session",
+            description_public = "Half marathon preparation"
         )
 
+        # User 1
         g2 = Goal(
-            title_en = "testgoal2",
-            description_public = "ThisIsAPublicDescription Goal 2"
+            title_en = "Run 50kms in a single session",
+            description_public = "Full marathon preparation."
         )
 
+        # User 1
         g3 = Goal(
-            title_en = "testgoal3",
-            description_public = "ThisIsAPublicDescription Goal 3"
+            title_en = "Sketch The Thinker from online images",
+            description_public = "Practice human biology in sketch."
         )
 
+        # User 2
+        g4 = Goal(
+            title_en = "Paint an image of a Lily",
+            description_public = "Create first full color image of a flower."
+        )
+        
+        # User 2
+        g5 = Goal(
+            title_en = "Finish Capstone 1 Project",
+            description_public = "Complete first full-stack project for programming course."
+        )
 
-        db.session.add_all([p1, p2, p3, h1, h2, h3, g1, g2, g3])
+        # User 2
+        g6 = Goal(
+            title_en = "Hit the Button 10 times in a row",
+            description_public = "Land stone in the center of the scoring area 10 times in a row in practice."
+        )
+        
+        # User 1
+        g7 = Goal(
+            title_en = "Complete lyrics for first song",
+            description_public = "Finish writing lyrics for first song release."
+        )
+     
+        # User 1
+        g8 = Goal(
+            title_en = "Master the guitar lick for recording",
+            description_public = "Practice the guitar line for first song in preparation for recording."
+        )
+
+        db.session.add_all([p1, p2, p3, p4, p5, h1, h2, h3, h4, h5, h6, h7, h8, g1, g2, g3, g4, g5, g6, g7, g8])
         db.session.commit()
 
         score1 = Scoring_System(
             user_id = u1.id,
-            title_en = "User1 US Grades System 1",
-            description = "US Grading System 1",
+            title_en = "US Grading System",
+            description = "US Grading System",
             public = False
         )
 
         score2 = Scoring_System(
             user_id = u1.id,
-            title_en = "User1 Scoring System 2",
-            description = "Some Sort of Scoring System 1",
+            title_en = "All or Nothing Scoring System 30mins",
+            description = "Only credit if time spent is greater than 30mins",
             public = False
         )
 
         score3 = Scoring_System(
             user_id = u2.id,
-            title_en = "User2 Scoring System 3",
-            description = "Some Sort of Scoring System 3",
+            title_en = "Back Loaded Scoring System",
+            description = "Progressively higher scores given for more time spent",
             public = False
         )
 
         score4 = Scoring_System(
             user_id = u2.id,
-            title_en = "User1 Scoring System 4",
-            description = "Some Sort of Scoring System 4",
+            title_en = "Motivational Message Scoring System",
+            description = "Scores are accopanied by motivational messages.",
             public = False
         )
 
@@ -235,15 +313,15 @@ def seed_demo():
         score2_param_2 = Scoring_System_Params(
             scoring_system_id = score2.id,
             score_bp = 1,
-            score_input = 50,
-            score_output = 2,
+            score_input = 29,
+            score_output = 0,
             name_en = None
         )
 
         score2_param_3 = Scoring_System_Params(
             scoring_system_id = score2.id,
             score_bp = 2,
-            score_input = 100,
+            score_input = 30,
             score_output = 5,
             name_en = None
         )
@@ -267,7 +345,7 @@ def seed_demo():
         score3_param_3 = Scoring_System_Params(
             scoring_system_id = score3.id,
             score_bp = 2,
-            score_input = 60,
+            score_input = 30,
             score_output = 5,
             name_en = None
         )
@@ -275,8 +353,24 @@ def seed_demo():
         score3_param_4 = Scoring_System_Params(
             scoring_system_id = score3.id,
             score_bp = 3,
-            score_input = 90,
+            score_input = 45,
             score_output = 10,
+            name_en = None
+        )
+
+        score3_param_5 = Scoring_System_Params(
+            scoring_system_id = score3.id,
+            score_bp = 4,
+            score_input = 55,
+            score_output = 15,
+            name_en = None
+        )
+
+        score3_param_6 = Scoring_System_Params(
+            scoring_system_id = score3.id,
+            score_bp = 5,
+            score_input = 60,
+            score_output = 20,
             name_en = None
         )
 
@@ -309,12 +403,12 @@ def seed_demo():
             score_bp = 3,
             score_input = 72,
             score_output = 120,
-            name_en = "Going beyond the call of duty!"
+            name_en = "A true champion!"
         )
 
         db.session.add_all([score1_param_1, score1_param_2, score1_param_3, score1_param_4, score1_param_5, score1_param_6, score2_param_1, 
-                            score2_param_2, score2_param_3, score3_param_1, score3_param_2, score3_param_3, score3_param_4, score4_param_1,
-                            score4_param_2, score4_param_3, score4_param_4])
+                            score2_param_2, score2_param_3, score3_param_1, score3_param_2, score3_param_3, score3_param_4, score3_param_5,
+                            score3_param_6, score4_param_1, score4_param_2, score4_param_3, score4_param_4])
         db.session.commit()
 
 
@@ -333,38 +427,39 @@ def seed_demo():
             description_private = None
         )
 
-        u1_p3 = User_Persona(
+        u1_p5 = User_Persona(
             active = True,
             user_id = u1.id,
-            persona_id = p3.id,
-            description_private = "This is a private description Persona 3"
-        )
-
-        u2_p1 = User_Persona(
-            active = True,
-            user_id = u2.id,
-            persona_id = p1.id,
-            description_private = "This is a private description Persona 1"
+            persona_id = p5.id,
+            description_private = "I'll be the best rockstar in the world, like Queen meets Slipknot."
         )
 
         u2_p2 = User_Persona(
             active = True,
             user_id = u2.id,
             persona_id = p2.id,
-            description_private = "This is a private description Persona 2"
+            description_private = "A new hobby to relax to, who doesn't like happy clouds?"
         )
 
         u2_p3 = User_Persona(
             active = True,
             user_id = u2.id,
             persona_id = p3.id,
+            description_private = "I've always wanted to create the next Facebook."
+        )
+
+        u2_p4 = User_Persona(
+            active = True,
+            user_id = u2.id,
+            persona_id = p4.id,
             description_private = None
         )
 
-        db.session.add_all([u1_p1, u1_p2, u1_p3, u2_p1, u2_p2, u2_p3])
+        db.session.add_all([u1_p1, u1_p2, u1_p5, u2_p2, u2_p3, u2_p4])
         db.session.commit()
 
-    # One Goal per Persona
+    # User 1 Goals
+        # Goal run 25kms
         u1_g1 = User_Goal(
             active = True,
             user_id = u1.id,
@@ -375,64 +470,90 @@ def seed_demo():
             description_private = None
         )
 
+        # Goal run 50kms
         u1_g2 = User_Goal(
-            active = True,
-            user_id = u1.id,
-            user_persona_id = u1_p2.id,
-            scoring_system_id = score2.id,
-            schedule_id = sched1.id,
-            goal_id = g2.id,
-            description_private = None
-        )
-
-        u1_g3 = User_Goal(
             active = True,
             user_id = u1.id,
             user_persona_id = u1_p1.id,
             scoring_system_id = score1.id,
             schedule_id = sched1.id,
-            goal_id = g3.id,
-            description_private = "This is a private description Goal 3"
-        )
-
-    # One Goal no Persona
-        u2_g1 = User_Goal(
-            active = True,
-            user_id = u2.id,
-            user_persona_id = None,
-            scoring_system_id = score3.id,
-            schedule_id = sched1.id,
-            goal_id = g1.id,
-            description_private = "This is a private description Goal 1"
-        )
-
-    # Mulitple Goals per Persona
-        u2_g2 = User_Goal(
-            active = True,
-            user_id = u2.id,
-            user_persona_id = u2_p2.id,
-            scoring_system_id = score4.id,
-            schedule_id = sched2.id,
             goal_id = g2.id,
-            description_private = "This is a private description Goal 2"
+            description_private = None
         )
 
-        u2_g3 = User_Goal(
+        # Sketch the Thinker
+        u1_g3 = User_Goal(
             active = True,
-            user_id = u2.id,
-            user_persona_id = u2_p3.id,
-            scoring_system_id = score3.id,
-            schedule_id = sched2.id,
+            user_id = u1.id,
+            user_persona_id = u1_p2.id,
+            scoring_system_id = score2.id,
+            schedule_id = sched1.id,
             goal_id = g3.id,
             description_private = None
         )
 
-        db.session.add_all([u1_g1, u1_g2, u1_g3, u2_g1, u2_g2, u2_g3])
+        # Write song lyrics
+        u1_g4 = User_Goal(
+            active = True,
+            user_id = u1.id,
+            user_persona_id = u1_p5.id,
+            scoring_system_id = score2.id,
+            schedule_id = sched1.id,
+            goal_id = g7.id,
+            description_private = "Gritty & politically charged or a party song?"
+        )
+
+        # Master Guitar
+        u1_g5 = User_Goal(
+            active = True,
+            user_id = u1.id,
+            user_persona_id = u1_p5.id,
+            scoring_system_id = score2.id,
+            schedule_id = sched1.id,
+            goal_id = g8.id,
+            description_private = "I will seranade the gods with my guitar mastery"
+        )
+
+        # User 2 Goals
+        # Paint a Lily
+        u2_g1 = User_Goal(
+            active = True,
+            user_id = u2.id,
+            user_persona_id = u2_p2.id,
+            scoring_system_id = score3.id,
+            schedule_id = sched1.id,
+            goal_id = g4.id,
+            description_private = None
+        )
+
+        # Finish Capstone
+        u2_g2 = User_Goal(
+            active = True,
+            user_id = u2.id,
+            user_persona_id = u2_p3.id,
+            scoring_system_id = score4.id,
+            schedule_id = sched2.id,
+            goal_id = g5.id,
+            description_private = "This website will change the world!  Well maybe not, but its a start."
+        )
+
+        # Curling bullseye
+        u2_g3 = User_Goal(
+            active = True,
+            user_id = u2.id,
+            user_persona_id = u2_p4.id,
+            scoring_system_id = score3.id,
+            schedule_id = sched2.id,
+            goal_id = g6.id,
+            description_private = None
+        )
+
+
+        db.session.add_all([u1_g1, u1_g2, u1_g3, u1_g4, u1_g5, u2_g1, u2_g2, u2_g3])
         db.session.commit()
 
-
-
-    # One Habit per Persona
+        # user 1 Habits
+        # Stretch
         u1_h1 = User_Habit(
             active = True,
             user_id = u1.id,
@@ -441,20 +562,22 @@ def seed_demo():
             schedule_id = sched1.id,
             habit_id = h1.id,
             linked_goal_id = None,
-            description_private = "This is a private description Habit 1"
+            description_private = "I've had alot of shin splint problems in the past"
         )
 
+        # Run
         u1_h2 = User_Habit(
             active = True,
             user_id = u1.id,
-            user_persona_id = u1_p2.id,
-            scoring_system_id = score2.id,
+            user_persona_id = u1_p1.id,
+            scoring_system_id = score1.id,
             schedule_id = sched1.id,
             habit_id = h2.id,
             linked_goal_id = None,
-            description_private = "This is a private description Habit 2"
+            description_private = None
         )
 
+        # Healthy Diet
         u1_h3 = User_Habit(
             active = True,
             user_id = u1.id,
@@ -462,328 +585,142 @@ def seed_demo():
             scoring_system_id = score1.id,
             schedule_id = sched1.id,
             habit_id = h3.id,
-            linked_goal_id = u1_g2.id,
+            linked_goal_id = None,
+            description_private = "No more Twinkies!"
+        )
+
+        # Sketch
+        u1_h4 = User_Habit(
+            active = True,
+            user_id = u1.id,
+            user_persona_id = u1_p2.id,
+            scoring_system_id = score2.id,
+            schedule_id = sched1.id,
+            habit_id = h4.id,
+            linked_goal_id = None,
             description_private = None
         )
 
-    # One Habit no Persona
+        # Paint
+        u1_h5 = User_Habit(
+            active = True,
+            user_id = u1.id,
+            user_persona_id = u1_p2.id,
+            scoring_system_id = score2.id,
+            schedule_id = sched1.id,
+            habit_id = h5.id,
+            linked_goal_id = None,
+            description_private = None
+        )
+
+        # Sing
+        u1_h6 = User_Habit(
+            active = True,
+            user_id = u1.id,
+            user_persona_id = u1_p5.id,
+            scoring_system_id = score2.id,
+            schedule_id = sched1.id,
+            habit_id = h8.id,
+            linked_goal_id = None,
+            description_private = "Screaming needs some work"
+        )
+
+        # User 2 Habits
+        # Stretch
         u2_h1 = User_Habit(
             active = True,
             user_id = u2.id,
-            user_persona_id = None,
+            user_persona_id = u2_p4.id,
             scoring_system_id = score3.id,
-            schedule_id = sched2.id,
+            schedule_id = sched1.id,
             habit_id = h1.id,
             linked_goal_id = None,
-            description_private = None
+            description_private = "Need to make sure my hips are loose for letting that stone go"
         )
 
-    # Mulitple Habits per Persona
+        # Healthy Diet
         u2_h2 = User_Habit(
             active = True,
             user_id = u2.id,
-            user_persona_id = u2_p2.id,
-            scoring_system_id = score4.id,
-            schedule_id = sched2.id,
-            habit_id = h2.id,
+            user_persona_id = u2_p4.id,
+            scoring_system_id = score3.id,
+            schedule_id = sched1.id,
+            habit_id = h3.id,
             linked_goal_id = None,
             description_private = None
         )
 
+        # Sketch
         u2_h3 = User_Habit(
             active = True,
             user_id = u2.id,
             user_persona_id = u2_p2.id,
-            scoring_system_id = score3.id,
-            schedule_id = sched2.id,
-            habit_id = h3.id,
+            scoring_system_id = score4.id,
+            schedule_id = sched1.id,
+            habit_id = h4.id,
             linked_goal_id = None,
-            description_private = "This is a private description Habit 3"
+            description_private = None
         )
 
-        db.session.add_all([u1_h1, u1_h2, u1_h3, u2_h1, u2_h2, u2_h3])
+        # Paint
+        u2_h4 = User_Habit(
+            active = True,
+            user_id = u2.id,
+            user_persona_id = u2_p2.id,
+            scoring_system_id = score4.id,
+            schedule_id = sched1.id,
+            habit_id = h5.id,
+            linked_goal_id = None,
+            description_private = None
+        )
+
+        # Code
+        u2_h5 = User_Habit(
+            active = True,
+            user_id = u2.id,
+            user_persona_id = u2_p3.id,
+            scoring_system_id = score3.id,
+            schedule_id = sched1.id,
+            habit_id = h6.id,
+            linked_goal_id = None,
+            description_private = None
+        )
+
+        # Code
+        u2_h6 = User_Habit(
+            active = True,
+            user_id = u2.id,
+            user_persona_id = u2_p4.id,
+            scoring_system_id = score3.id,
+            schedule_id = sched1.id,
+            habit_id = h7.id,
+            linked_goal_id = None,
+            description_private = None
+        )
+
+        db.session.add_all([u1_h1, u1_h2, u1_h3, u1_h4, u1_h5, u1_h6, u2_h1, u2_h2, u2_h3, u2_h4, u2_h5, u2_h6])
         db.session.commit()
 
 
-    #  1 week of history
-        score1_u1_h1 = Habit_Score(
-            date = datetime.today(),
-            score = 50.0,
-            habit_id = u1_h1.id
-        )
+        generateUserGoalScores(30, u1_g1.id, 0, 100)
+        generateUserGoalScores(20, u1_g2.id, 0, 100)
+        generateUserGoalScores(30, u1_g3.id, 0, 100)
+        generateUserGoalScores(25, u1_g4.id, 0, 100)
+        generateUserGoalScores(15, u1_g5.id, 0, 100)
+        generateUserGoalScores(25, u2_g1.id, 0, 100)
+        generateUserGoalScores(15, u2_g2.id, 0, 100)
+        generateUserGoalScores(30, u2_g3.id, 0, 100)
 
-        score2_u1_h1 = Habit_Score(
-            date = datetime.today() - timedelta(days=1),
-            score = 60.0,
-            habit_id = u1_h1.id
-        )
+        generateUserHabitScores(30, u1_h1.id, 0, 100)
+        generateUserHabitScores(30, u1_h2.id, 0, 100)
+        generateUserHabitScores(20, u1_h3.id, 0, 100)
+        generateUserHabitScores(30, u1_h4.id, 0, 100)
+        generateUserHabitScores(25, u1_h5.id, 0, 100)
+        generateUserHabitScores(30, u1_h6.id, 0, 100)
+        generateUserHabitScores(30, u2_h1.id, 0, 100)
+        generateUserHabitScores(30, u2_h2.id, 0, 100)
+        generateUserHabitScores(15, u2_h3.id, 0, 100)
+        generateUserHabitScores(10, u2_h4.id, 0, 100)
+        generateUserHabitScores(20, u2_h5.id, 0, 100)
+        generateUserHabitScores(30, u2_h6.id, 0, 100)
 
-        score3_u1_h1 = Habit_Score(
-            date = datetime.today() - timedelta(days=2),
-            score = 80.0,
-            habit_id = u1_h1.id
-        )
-
-        score4_u1_h1 = Habit_Score(
-            date = datetime.today() - timedelta(days=3),
-            score = 65.0,
-            habit_id = u1_h1.id
-        )
-
-        score5_u1_h1 = Habit_Score(
-            date = datetime.today() - timedelta(days=4),
-            score = 45.0,
-            habit_id = u1_h1.id
-        )
-
-        score6_u1_h1 = Habit_Score(
-            date = datetime.today() - timedelta(days=5),
-            score = 0.0,
-            habit_id = u1_h1.id
-        )
-
-        score7_u1_h1 = Habit_Score(
-            date = datetime.today() - timedelta(days=6),
-            score = 90.0,
-            habit_id = u1_h1.id
-        )
-
-        db.session.add_all([score1_u1_h1, score2_u1_h1, score3_u1_h1, score4_u1_h1, score5_u1_h1, score6_u1_h1, score7_u1_h1])
-
-    # 3 days of history
-        score1_u1_h2 = Habit_Score(
-            date = datetime.today(),
-            score = 70,
-            habit_id = u1_h2.id
-        )
-
-        score2_u1_h2 = Habit_Score(
-            date = datetime.today() - timedelta(days=1),
-            score = 80.0,
-            habit_id = u1_h2.id
-        )
-
-        score3_u1_h2 = Habit_Score(
-            date = datetime.today() - timedelta(days=2),
-            score = 90.0,
-            habit_id = u1_h2.id
-        )
-
-        db.session.add_all([score1_u1_h2, score2_u1_h2, score3_u1_h2])
-
-    # No History for h3
-        # score1_u1_h3
-
-    # 3 days of history
-        score1_u2_h1 = Habit_Score(
-            date = datetime.today(),
-            score = 70,
-            habit_id = u2_h1.id
-        )
-
-        score2_u2_h1 = Habit_Score(
-            date = datetime.today() - timedelta(days=1),
-            score = 95,
-            habit_id = u2_h1.id
-        )
-
-        score3_u2_h1 = Habit_Score(
-            date = datetime.today() - timedelta(days=2),
-            score = 100,
-            habit_id = u2_h1.id
-        )
-
-        db.session.add_all([score1_u2_h1, score2_u2_h1, score3_u2_h1])
-
-    # No History for h2
-        # score1_u2_h2
-
-    # Full week of history
-        score1_u2_h3 = Habit_Score(
-            date = datetime.today(),
-            score = 100,
-            habit_id = u2_h3.id
-        )
-
-        score2_u2_h3 = Habit_Score(
-            date = datetime.today() - timedelta(days=1),
-            score = 111,
-            habit_id = u2_h3.id
-        )
-
-        score3_u2_h3 = Habit_Score(
-            date = datetime.today() - timedelta(days=2),
-            score = 95,
-            habit_id = u2_h3.id
-        )
-
-        score4_u2_h3 = Habit_Score(
-            date = datetime.today() - timedelta(days=3),
-            score = 105,
-            habit_id = u2_h3.id
-        )
-
-        score5_u2_h3 = Habit_Score(
-            date = datetime.today() - timedelta(days=4),
-            score = 100,
-            habit_id = u2_h3.id
-        )
-
-        score6_u2_h3 = Habit_Score(
-            date = datetime.today() - timedelta(days=5),
-            score = 70,
-            habit_id = u2_h3.id
-        )
-
-        score7_u2_h3 = Habit_Score(
-            date = datetime.today() - timedelta(days=6),
-            score = 55,
-            habit_id = u2_h3.id
-        )
-
-        db.session.add_all([score1_u2_h3, score2_u2_h3, score3_u2_h3, score4_u2_h3, score5_u2_h3, score6_u2_h3, score7_u2_h3])
-        db.session.commit()
-
-
-    # ----------------------
-    #  GOALS
-    # ----------------------
-
-    #  1 week of history
-        score1_u1_g1 = Goal_Score(
-            date = datetime.today(),
-            score = 50.0,
-            goal_id = u1_g1.id
-        )
-
-        score2_u1_g1 = Goal_Score(
-            date = datetime.today() - timedelta(days=1),
-            score = 60.0,
-            goal_id = u1_g1.id
-        )
-
-        score3_u1_g1 = Goal_Score(
-            date = datetime.today() - timedelta(days=2),
-            score = 80.0,
-            goal_id = u1_g1.id
-        )
-
-        score4_u1_g1 = Goal_Score(
-            date = datetime.today() - timedelta(days=3),
-            score = 65.0,
-            goal_id = u1_g1.id
-        )
-
-        score5_u1_g1 = Goal_Score(
-            date = datetime.today() - timedelta(days=4),
-            score = 45.0,
-            goal_id = u1_g1.id
-        )
-
-        score6_u1_g1 = Goal_Score(
-            date = datetime.today() - timedelta(days=5),
-            score = 0.0,
-            goal_id = u1_g1.id
-        )
-
-        score7_u1_g1 = Goal_Score(
-            date = datetime.today() - timedelta(days=6),
-            score = 90.0,
-            goal_id = u1_g1.id
-        )
-
-        db.session.add_all([score1_u1_g1, score2_u1_g1, score3_u1_g1, score4_u1_g1, score5_u1_g1, score6_u1_g1, score7_u1_g1])
-
-    # 3 days of history
-        score1_u1_g2 = Goal_Score(
-            date = datetime.today(),
-            score = 70,
-            goal_id = u1_g2.id
-        )
-
-        score2_u1_g2 = Goal_Score(
-            date = datetime.today() - timedelta(days=1),
-            score = 80.0,
-            goal_id = u1_g2.id
-        )
-
-        score3_u1_g2 = Goal_Score(
-            date = datetime.today() - timedelta(days=2),
-            score = 90.0,
-            goal_id = u1_g2.id
-        )
-
-        db.session.add_all([score1_u1_g2, score2_u1_g2, score3_u1_g2])
-
-    # No History for g3
-        # score1_u1_g3
-
-    # 3 days of history
-        score1_u2_g1 = Goal_Score(
-            date = datetime.today(),
-            score = 70,
-            goal_id = u2_g1.id
-        )
-
-        score2_u2_g1 = Goal_Score(
-            date = datetime.today() - timedelta(days=1),
-            score = 95,
-            goal_id = u2_g1.id
-        )
-
-        score3_u2_g1 = Goal_Score(
-            date = datetime.today() - timedelta(days=2),
-            score = 100,
-            goal_id = u2_g1.id
-        )
-
-        db.session.add_all([score1_u2_g1, score2_u2_h1, score3_u2_g1])
-
-    # No History for g2
-        # score1_u2_g2
-
-    # Full week of history
-        score1_u2_g3 = Goal_Score(
-            date = datetime.today(),
-            score = 100,
-            goal_id = u2_g3.id
-        )
-
-        score2_u2_g3 = Goal_Score(
-            date = datetime.today() - timedelta(days=1),
-            score = 111,
-            goal_id = u2_g3.id
-        )
-
-        score3_u2_g3 = Goal_Score(
-            date = datetime.today() - timedelta(days=2),
-            score = 95,
-            goal_id = u2_g3.id
-        )
-
-        score4_u2_g3 = Goal_Score(
-            date = datetime.today() - timedelta(days=3),
-            score = 105,
-            goal_id = u2_g3.id
-        )
-
-        score5_u2_g3 = Goal_Score(
-            date = datetime.today() - timedelta(days=4),
-            score = 100,
-            goal_id = u2_g3.id
-        )
-
-        score6_u2_g3 = Goal_Score(
-            date = datetime.today() - timedelta(days=5),
-            score = 70,
-            goal_id = u2_g3.id
-        )
-
-        score7_u2_g3 = Goal_Score(
-            date = datetime.today() - timedelta(days=6),
-            score = 55,
-            goal_id = u2_g3.id
-        )
-
-        db.session.add_all([score1_u2_g3, score2_u2_g3, score3_u2_g3, score4_u2_g3, score5_u2_g3, score6_u2_g3, score7_u2_g3])
-        db.session.commit()

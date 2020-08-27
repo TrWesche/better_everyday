@@ -24,7 +24,6 @@ async function getChartData(system) {
 
 async function drawStepChart(system, target_div, chart_title) {
     if (!chartJson) {
-        console.log("loadingScoringSystemData")
         chartJson = await getChartData(system)
     }
     
