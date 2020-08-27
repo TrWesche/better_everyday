@@ -98,6 +98,18 @@ def query_all_user_goals(user_id):
         .filter(User_Goal.user_id == user_id).all()
     return query_result
 
+def query_one_user_goal_dict_join(user_id, goal_id):
+    query_result = User_Goal.query\
+        .join(Goal, User_Goal.goal_id == Goal.id)\
+        .add_columns(User_Goal.user_id, Goal.title_en, Goal.description_public)\
+        .filter(and_(User_Goal.user_id == user_id, User_Goal.id == goal_id)).first()
+    return query_result
+
+def query_one_user_goal(user_id, goal_id):
+    query_result = User_Goal.query\
+        .filter(and_(User_Goal.user_id == user_id, User_Goal.id == goal_id)).first()
+    return query_result
+
 @plan_bp.route("/", methods=["GET"])
 def get_plan_home():
     # Check for login
@@ -276,7 +288,7 @@ def delete_persona(persona_id):
 @plan_bp.route("/habit/new", methods=["GET"])
 @login_required
 def get_new_habit():
-    # Create user form and fill Select choices from database
+    # Create user habit form and fill Select choices from database
     form = UserHabitForm()
 
     user_personas = query_all_user_personas(g.user.id)
@@ -293,7 +305,6 @@ def get_new_habit():
     # user_habit_form.schedule_id.choices = reminder_schedule_list
 
     return render_template("plan_new_habit.html", user_habit_form=form)
-
 
 @plan_bp.route("/habit/new", methods=["POST"])
 @login_required
@@ -367,35 +378,33 @@ def get_edit_habit(habit_id):
         return redirect(url_for("plan_bp.get_plan_home"))
 
     # Create form and populate the select fields with valid selection options
-    user_habit_form = UserHabitForm()
+    form = UserHabitForm()
 
     # Retrieve & Create list of valid personas for the logged in user in Tuple Format (id, display_text)
     user_personas = query_all_user_personas(g.user.id)
     persona_list = [(persona.User_Persona.id, persona.title_en) for persona in user_personas]
-    user_habit_form.persona.choices = persona_list
+    form.persona.choices = persona_list
 
     # Retrieve & Create list of valid scoring systems for the logged in user in Tuple Format (id, display_text)
     user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
     scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
-    user_habit_form.scoring_system_id.choices = scoring_system_list
+    form.scoring_system_id.choices = scoring_system_list
 
     # Retrieve & Create list of valid reminder schedules for the logged in user in Tuple Format (id, display_text)
     # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
     # reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
-    # user_habit_form.schedule_id.choices = reminder_schedule_list
+    # form.schedule_id.choices = reminder_schedule_list
 
     # Load data retrieved from the database into the form object for rendering
-    user_habit_form.title.data = target_user_habit.title_en
-    user_habit_form.description.data = target_user_habit.User_Habit.description_private
-    user_habit_form.persona.data = target_user_habit.User_Habit.user_persona_id
-    user_habit_form.scoring_system_id.data = target_user_habit.User_Habit.scoring_system_id
-    # user_habit_form.schedule_id.data = target_user_habit.User_Habit.schedule_id
-    user_habit_form.active.data = target_user_habit.User_Habit.active
-
+    form.title.data = target_user_habit.title_en
+    form.description.data = target_user_habit.User_Habit.description_private
+    form.persona.data = target_user_habit.User_Habit.user_persona_id
+    form.scoring_system_id.data = target_user_habit.User_Habit.scoring_system_id
+    # form.schedule_id.data = target_user_habit.User_Habit.schedule_id
+    form.active.data = target_user_habit.User_Habit.active
 
     return render_template("plan_edit_habit.html",
-            user_habit_form=user_habit_form, habit_id=habit_id)
-
+            user_habit_form=form, habit_id=habit_id)
 
 @plan_bp.route("/habit/<int:habit_id>/edit", methods=["POST"])
 @login_required
@@ -458,8 +467,7 @@ def update_habit(habit_id):
         flash("Error: Unable to update user habit", "danger")
         print(e)
         db.session.rollback()
-        return redirect(url_for("plan_bp.get_edit_habit"))
-    
+        return redirect(url_for("plan_bp.get_edit_habit")) 
 
 # Delete Habit
 @plan_bp.route("/habit/<int:habit_id>/delete", methods=["POST"])
@@ -489,246 +497,205 @@ def delete_habit(habit_id):
 
 # Create Goal
 @plan_bp.route("/goal/new", methods=["GET"])
+@login_required
 def get_new_goal():
-    if g.user:
-        user_personas = User_Persona.query\
-            .join(Persona, User_Persona.persona_id == Persona.id)\
-            .add_columns(Persona.id, Persona.title_en)\
-            .filter(User_Persona.user_id == g.user.id).all()
+    # Create user goal form and fill Select choices from database
+    form = UserGoalForm()
 
-        persona_list = [(persona.User_Persona.id, persona.title_en) for persona in user_personas]
-
-        user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
-        scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
-
-        # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-        # reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
-
-        user_goal_form = UserGoalForm()
-        user_goal_form.persona.choices = persona_list
-        user_goal_form.scoring_system_id.choices = scoring_system_list
-        # user_goal_form.schedule_id.choices = reminder_schedule_list
-
-        return render_template("plan_new_goal.html",
-                user_goal_form=user_goal_form)
-
-    else:
-        flash("You must be logged in to access that page.", "warning")
-        return redirect(url_for("home_bp.homepage"))
-
-@plan_bp.route("/goal/new", methods=["POST"])
-def add_user_goal():
-    form = UserGoalForm(request.form)
-
-    user_personas = User_Persona.query.filter(User_Persona.user_id == g.user.id).all()
-    persona_list = [(persona.id, "p") for persona in user_personas] # This works becuase the validate_on_submit only checks the id part of the tuple
+    user_personas = query_all_user_personas(g.user.id)
+    persona_list = [(persona.User_Persona.id, persona.title_en) for persona in user_personas]
     form.persona.choices = persona_list
 
     user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
-    scoring_system_list = [(system.id, "s") for system in user_scoring_systems]
+    scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
     form.scoring_system_id.choices = scoring_system_list
 
+    # Reminder schedule is a future feature - Not implemented in the MVP version
     # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-    # reminder_schedule_list = [(schedule.id, "s") for schedule in user_reminder_schedule]
-    # form.schedule_id.choices = reminder_schedule_list
+    # reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
+    # user_habit_form.schedule_id.choices = reminder_schedule_list
 
-    if form.validate_on_submit():
-        target_goal = Goal.query.filter(Goal.title_en == form.title.data.lower()).first()
-        target_persona = User_Persona.query.filter(User_Persona.id == form.persona.data).first()
+    return render_template("plan_new_goal.html",
+            user_goal_form=form)
 
-        if not target_goal:
-            target_goal = Goal(title_en = form.title.data.lower())
-            db.session.add(target_goal)
+@plan_bp.route("/goal/new", methods=["POST"])
+@login_required
+def add_user_goal():
+    form = UserGoalForm(request.form)
 
-            try:
-                db.session.commit()
-            except Exception as e:
-                flash("Error: Unable to create new goal", "danger")
-                print(e)
-                db.session.rollback()
-                return redirect(url_for("plan_bp.get_new_goal"))
-            
-        active = form.active.data
-        user_id = g.user.id
-        persona_id = target_persona.id
-        goal_id = target_goal.id
-        scoring_system_id = form.scoring_system_id.data
-        # schedule_id = form.schedule_id.data
+    user_personas = query_all_user_personas(g.user.id)
+    persona_list = [(persona.User_Persona.id, persona.title_en) for persona in user_personas]
+    form.persona.choices = persona_list
 
+    user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
+    scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
+    form.scoring_system_id.choices = scoring_system_list
 
-        #!!!# The user should also be able to link a goal to a habit in the future
-        new_user_goal = User_Goal(
-                            active = active, 
-                            user_id = user_id, 
-                            user_persona_id = persona_id, 
-                            scoring_system_id = scoring_system_id, 
-                            # schedule_id = schedule_id,
-                            goal_id = goal_id, 
-                            description_private = form.description.data)
+    # Reminder schedule is a future feature - Not implemented in the MVP version
+    # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+    # reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
+    # user_habit_form.schedule_id.choices = reminder_schedule_list
 
-        db.session.add(new_user_goal)
+    # If form cannot be validated re-render page
+    if not form.validate_on_submit():
+        return render_template("plan_new_goal.html", user_goal_form=form)
+
+    # If target goal does not exist in dictionary add new entry in the Goal table
+    target_goal = Goal.query.filter(Goal.title_en == form.title.data.lower()).first()
+    
+    if not target_goal:
+        target_goal = Goal(title_en = form.title.data.lower())
+        db.session.add(target_goal)
 
         try:
             db.session.commit()
         except Exception as e:
-            flash("Error: Unable to create new user goal", "danger")
+            flash("Error: Unable to create new goal", "danger")
             print(e)
             db.session.rollback()
             return redirect(url_for("plan_bp.get_new_goal"))
+
+    # Find the id number for the selected target persona and create new User Goal entry
+    target_persona = User_Persona.query.filter(User_Persona.id == form.persona.data).first()
+
+    #!!!# The user should also be able to link a goal to a habit in the future
+    new_user_goal = User_Goal(
+                        active = form.active.data, 
+                        user_id = g.user.id, 
+                        user_persona_id = target_persona.id, 
+                        scoring_system_id = form.scoring_system_id.data, 
+                        # schedule_id = schedule_id,
+                        goal_id = target_goal.id, 
+                        description_private = form.description.data)
+
+    db.session.add(new_user_goal)
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        flash("Error: Unable to create new user goal", "danger")
+        print(e)
+        db.session.rollback()
 
     return redirect(url_for("plan_bp.get_plan_home"))
 
 # Update Goal
 @plan_bp.route("/goal/<int:goal_id>/edit", methods=["GET"])
+@login_required
 def get_edit_goal(goal_id):
-    if g.user:
+    # Check that User Habit and User ID combo exists, if not unauthorized access
+    target_user_goal = query_one_user_goal_dict_join(g.user.id, goal_id)
+    if not target_user_goal:
+        flash(msg_not_authorized, "warning")
+        return redirect(url_for("plan_bp.get_plan_home"))
 
-        target_user_goal = User_Goal.query\
-            .join(Goal, User_Goal.goal_id == Goal.id)\
-            .add_columns(User_Goal.user_id, Goal.title_en, Goal.description_public)\
-            .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id)).first()
+    form = UserGoalForm()
 
-        if target_user_goal:
+    # Retrieve & Create list of valid personas for the logged in user in Tuple Format (id, display_text)
+    user_personas = query_all_user_personas(g.user.id)
+    persona_list = [(persona.User_Persona.id, persona.title_en) for persona in user_personas]
+    form.persona.choices = persona_list
 
-            # Retrieve & Create list of valid personas for the logged in user in Tuple Format (id, display_text)
-            user_personas = User_Persona.query\
-                .join(Persona, User_Persona.persona_id == Persona.id)\
-                .add_columns(Persona.id, Persona.title_en)\
-                .filter(User_Persona.user_id == g.user.id).all()
+    # Retrieve & Create list of valid scoring systems for the logged in user in Tuple Format (id, display_text)
+    user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
+    scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
+    form.scoring_system_id.choices = scoring_system_list
 
-            persona_list = [(persona.User_Persona.id, persona.title_en) for persona in user_personas]
+    # Retrieve & Create list of valid reminder schedules for the logged in user in Tuple Format (id, display_text)
+    # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+    # reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
+    # form.schedule_id.choices = reminder_schedule_list    
 
-            # Retrieve & Create list of valid scoring systems for the logged in user in Tuple Format (id, display_text)
-            user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
-            scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
+    # Load data retrieved from the database into the form object for rendering
+    form.title.data = target_user_goal.title_en
+    form.description.data = target_user_goal.User_Goal.description_private
+    form.persona.data = target_user_goal.User_Goal.user_persona_id
+    form.scoring_system_id.data = target_user_goal.User_Goal.scoring_system_id
+    # form.schedule_id.data = target_user_goal.User_Goal.schedule_id
+    form.active.data = target_user_goal.User_Goal.active
 
-            # Retrieve & Create list of valid reminder schedules for the logged in user in Tuple Format (id, display_text)
-            # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-            # reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
-
-            # Create form and populate the select fields with valid selection options
-            user_goal_form = UserGoalForm()
-            
-            user_goal_form.persona.choices = persona_list
-            user_goal_form.scoring_system_id.choices = scoring_system_list
-            # user_goal_form.schedule_id.choices = reminder_schedule_list
-
-            # Load data retrieved from the database into the form object for rendering
-            user_goal_form.title.data = target_user_goal.title_en
-            user_goal_form.description.data = target_user_goal.User_Goal.description_private
-            user_goal_form.persona.data = target_user_goal.User_Goal.user_persona_id
-            user_goal_form.scoring_system_id.data = target_user_goal.User_Goal.scoring_system_id
-            # user_goal_form.schedule_id.data = target_user_goal.User_Goal.schedule_id
-            user_goal_form.active.data = target_user_goal.User_Goal.active
-
-
-            return render_template("plan_edit_goal.html",
-                    user_goal_form=user_goal_form, goal_id=goal_id)
-
-        else:
-            flash("We were unable to retrive your details for that goal.", "warning")
-
-    else:
-        flash("You must be logged in to access that page.", "warning")
-
-    return redirect(url_for("plan_bp.get_plan_home"))
+    return render_template("plan_edit_goal.html",
+            user_goal_form=form, goal_id=goal_id)
 
 @plan_bp.route("/goal/<int:goal_id>/edit", methods=["POST"])
+@login_required
 def update_goal(goal_id):
-    if g.user:
+    # Check that User Goal and User ID combo exists, if not unauthorized access
+    target_user_goal = query_one_user_goal(g.user.id, goal_id)
+    if not target_user_goal:
+        flash(msg_not_authorized, "warning")
+        return redirect(url_for("plan_bp.get_plan_home"))
 
-        target_user_goal = User_Goal.query\
-            .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id)).first()
+    form = UserGoalForm(request.form)
 
-        if target_user_goal:
+    user_personas = query_all_user_personas(g.user.id)
+    persona_list = [(persona.User_Persona.id, persona.title_en) for persona in user_personas]
+    form.persona.choices = persona_list
 
-            form = UserGoalForm(request.form)
+    user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
+    scoring_system_list = [(system.id, system.title_en) for system in user_scoring_systems]
+    form.scoring_system_id.choices = scoring_system_list
 
-            # Retrieve & Create list of valid personas for the logged in user in Tuple Format (id, text)
-            # Text is not being validated here, only id number is checked hense text is not dynamically loaded
-            user_personas = User_Persona.query.filter(User_Persona.user_id == g.user.id).all()
-            persona_list = [(persona.id, "p") for persona in user_personas] # This works becuase the validate_on_submit only checks the id (first) value of the tuple
-            form.persona.choices = persona_list
+    # Reminder schedule is a future feature - Not implemented in the MVP version
+    # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
+    # reminder_schedule_list = [(schedule.id, schedule.title_en) for schedule in user_reminder_schedule]
+    # user_habit_form.schedule_id.choices = reminder_schedule_list
 
-            # Retrieve & Create list of valid scoring systems for the logged in user in Tuple Format (id, text)
-            # Text is not being validated here, only id number is checked hense text is not dynamically loaded
-            user_scoring_systems = Scoring_System.query.filter(or_(Scoring_System.user_id == g.user.id, Scoring_System.public == True)).all()
-            scoring_system_list = [(system.id, "s") for system in user_scoring_systems]
-            form.scoring_system_id.choices = scoring_system_list
+    # If form cannot be validated re-render page
+    if not form.validate_on_submit():
+        return render_template("plan_edit_goal.html",
+                            user_goal_form=form, goal_id=goal_id)
 
-            # Retrieve & Create list of valid reminder schedules for the logged in user in Tuple Format (id, text)
-            # Text is not being validated here, only id number is checked hense text is not dynamically loaded
-            # user_reminder_schedule = Reminder_Schedule.query.filter(or_(Reminder_Schedule.user_id == g.user.id, Reminder_Schedule.public == True)).all()
-            # reminder_schedule_list = [(schedule.id, "s") for schedule in user_reminder_schedule]
-            # form.schedule_id.choices = reminder_schedule_list
+    # If target goal does not exist in dictionary add new entry in the Goal table
+    target_goal = Goal.query.filter(Goal.title_en == form.title.data.lower()).first()
+    if not target_goal:
+        target_goal = Goal(title_en = form.title.data.lower())
+        db.session.add(target_goal)
 
-            if form.validate_on_submit():
-                target_goal = Goal.query.filter(Goal.title_en == form.title.data.lower()).first()
-                target_persona = User_Persona.query.filter(User_Persona.id == form.persona.data).first()
+        try:
+            db.session.commit()
+        except Exception as e:
+            flash("Error: Failed to update user goal title", "danger")
+            print(e)
+            db.session.rollback()
+            return redirect(url_for("plan_bp.get_plan_home"))
+    
+    
+    target_persona = User_Persona.query.filter(User_Persona.id == form.persona.data).first()
+    
+    target_user_goal.active = form.active.data
+    target_user_goal.user_persona_id = target_persona.id
+    target_user_goal.scoring_system_id = form.scoring_system_id.data
+    # target_user_goal.schedule_id = form.schedule_id.data
+    target_user_goal.goal_id = target_goal.id
+    target_user_goal.description_private = form.description.data
 
-                if not target_goal:
-                    target_goal = Goal(title_en = form.title.data.lower())
-                    db.session.add(target_goal)
-
-                    try:
-                        db.session.commit()
-                    except Exception as e:
-                        flash("Error: Failed to update user goal title", "danger")
-                        print(e)
-                        db.session.rollback()
-                        return redirect(url_for("plan_bp.get_plan_home"))
-                
-                
-                target_user_goal.active = form.active.data
-                target_user_goal.user_persona_id = target_persona.id
-                target_user_goal.scoring_system_id = form.scoring_system_id.data
-                # target_user_goal.schedule_id = form.schedule_id.data
-                target_user_goal.goal_id = target_goal.id
-                target_user_goal.description_private = form.description.data
-
-                try:
-                    db.session.commit()
-                    return redirect(url_for("plan_bp.get_plan_home"))
-                except Exception as e:
-                    flash("Error: Unable to update user goal", "danger")
-                    print(e)
-                    db.session.rollback()
-                    return redirect(url_for("plan_bp.get_edit_goal"))
-            else:
-                return render_template("plan_edit_goal.html",
-                        user_goal_form=form, goal_id=goal_id)
-
-        else:
-            flash("You don't have permission to do that.", "warning")
-
-    else:
-        flash("You must be logged in to access that page.", "warning")
-
-    return redirect(url_for("plan_bp.get_plan_home"))
+    try:
+        db.session.commit()
+        return redirect(url_for("plan_bp.get_plan_home"))
+    except Exception as e:
+        flash("Error: Unable to update user goal", "danger")
+        print(e)
+        db.session.rollback()
+        return redirect(url_for("plan_bp.get_edit_goal"))
 
 # Delete Goal
 @plan_bp.route("/goal/<int:goal_id>/delete", methods=["POST"])
+@login_required
 def delete_goal(goal_id):
-    if g.user:
-
-        target_user_goal = User_Goal.query\
-            .filter(and_(User_Goal.user_id == g.user.id, User_Goal.id == goal_id)).first()
-
-        if target_user_goal:
-            db.session.delete(target_user_goal)
-
-            try:
-                db.session.commit()
-            except Exception as e:
-                flash("Error: Unable to delete user goal", "danger")
-                print(e)
-                db.session.rollback()  
-        
-        else:
-            flash("You do not have appropriate permissions to delete that user goal.", "warning")    
-        
+    # Check that User Goal and User ID combo exists, if not unauthorized access
+    target_user_goal = query_one_user_goal(g.user.id, goal_id)
+    if not target_user_goal:
+        flash(msg_not_authorized, "warning")
         return redirect(url_for("plan_bp.get_plan_home"))
 
-    else:
-        flash("You must be logged in to access that page.", "warning")
-        return redirect(url_for("home_bp.homepage"))
+    # Attempt to delete goal from the database
+    db.session.delete(target_user_goal)
+    try:
+        db.session.commit()
+    except Exception as e:
+        flash("Error: Unable to delete user goal", "danger")
+        print(e)
+        db.session.rollback()  
+
+    return redirect(url_for("plan_bp.get_plan_home"))
