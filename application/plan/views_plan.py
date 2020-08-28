@@ -474,7 +474,7 @@ def update_habit(habit_id):
 @login_required
 def delete_habit(habit_id):
     # Check that User Habit and User ID combo exists, if not unauthorized access
-    target_user_habit = query_one_user_habit_dict_join(g.user.id, habit_id)
+    target_user_habit = query_one_user_habit(g.user.id, habit_id)
     if not target_user_habit:
         flash(msg_not_authorized, "warning")
         return redirect(url_for("plan_bp.get_plan_home"))
