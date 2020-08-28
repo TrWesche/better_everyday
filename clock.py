@@ -3,7 +3,7 @@ from seed_demo import seed_demo
 
 seedSched = BlockingScheduler()
 
-@seedSched.scheduled_job('interval', hours=4)
+@seedSched.scheduled_job('interval', minutes=25)
 def cleanupDatabase():
     print("Cleaning up database and reseeding with demo account data.")
     seed_demo()
